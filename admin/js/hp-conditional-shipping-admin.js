@@ -143,7 +143,14 @@ jQuery(document).ready(function($) {
 			this.table.data( 'index', index + 1 );
 
 			// Get template
-			var row_template = wp.template( 'wcs_row_template' );
+			var row_template;
+			try {
+				row_template = wp.template( 'wcs_row_template' );
+			} catch ( e ) {
+				console.error( 'HP CS: Error compiling wcs_row_template:', e );
+				console.log( 'Template content:', document.getElementById( 'tmpl-wcs_row_template' )?.innerHTML?.substring(0, 500) );
+				return;
+			}
 
 			// Add products
 			var products_data = this.table.data( 'selected-products' );
@@ -538,7 +545,14 @@ jQuery(document).ready(function($) {
 			this.table.data( 'index', index + 1 );
 
 			// Get template
-			var row_template = wp.template( 'wcs_action_row_template' );
+			var row_template;
+			try {
+				row_template = wp.template( 'wcs_action_row_template' );
+			} catch ( e ) {
+				console.error( 'HP CS: Error compiling wcs_action_row_template:', e );
+				console.log( 'Template content:', document.getElementById( 'tmpl-wcs_action_row_template' )?.innerHTML?.substring(0, 500) );
+				return;
+			}
 
 			// Render template and add to the table
 			$( 'tbody', this.table ).append( row_template( data ) );
