@@ -9,6 +9,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	 &gt; 
 	<?php echo esc_html( $ruleset->get_title() ); ?>
 </h2>
+<p class="hp-cs-version" style="color: #666; font-size: 12px; margin: -10px 0 15px 0;">
+	<?php echo esc_html( sprintf( __( 'HP Conditional Shipping v%s', 'hp-conditional-shipping' ), HP_CS_VERSION ) ); ?>
+</p>
 
 <table class="form-table woo-conditional-shipping-ruleset-settings">
 	<tbody>
