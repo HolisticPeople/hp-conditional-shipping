@@ -4,11 +4,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // #region agent log - Debug output to page
-// H9: Check for PHP errors
-ob_start();
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 $hp_cs_conditions_json = json_encode( $ruleset->get_conditions() );
 $hp_cs_actions_json = json_encode( $ruleset->get_actions() );
 $hp_cs_filter_groups = hp_cs_filter_groups();
@@ -83,12 +78,6 @@ jQuery(document).ready(function($) {
 
 <?php
 // #endregion
-
-// H9: Flush any buffered PHP errors before templates
-$hp_cs_php_errors = ob_get_clean();
-if (!empty($hp_cs_php_errors)) {
-	echo '<div style="background:yellow;padding:5px;"><strong>PHP Errors:</strong><pre>' . esc_html($hp_cs_php_errors) . '</pre></div>';
-}
 ?>
 
 <h2 class="woo-conditional-shipping-heading">
