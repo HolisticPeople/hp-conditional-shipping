@@ -17,12 +17,6 @@ jQuery(document).ready(function($) {
 			this.operators = table.data( 'operators' );
 			this.conditions = table.data( 'conditions' );
 
-			console.log( 'HP CS Conditions Table Init:', {
-				operators: this.operators,
-				conditions: this.conditions,
-				rawAttr: table.attr( 'data-conditions' )
-			});
-
 			this.initTagSearch();
 			this.initMetaSearch();
 			this.initCouponSearch();
@@ -58,10 +52,6 @@ jQuery(document).ready(function($) {
 		 * Insert existing conditions into the table
 		 */
 		insertExisting: function() {
-			if ( ! this.conditions || ! Array.isArray( this.conditions ) ) {
-				console.log( 'HP CS: No conditions to insert or conditions is not an array', this.conditions );
-				return;
-			}
 			for ( var i = 0; i < this.conditions.length; i++ ) {
 				this.addCondition( this.conditions[i] );
 			}
@@ -427,11 +417,6 @@ jQuery(document).ready(function($) {
 
 			this.actions = table.data( 'actions' );
 
-			console.log( 'HP CS Actions Table Init:', {
-				actions: this.actions,
-				rawAttr: table.attr( 'data-actions' )
-			});
-
 			this.insertExisting();
 			this.insertEmpty();
 
@@ -468,10 +453,6 @@ jQuery(document).ready(function($) {
 		 * Insert existing actions into the table
 		 */
 		insertExisting: function() {
-			if ( ! this.actions || ! Array.isArray( this.actions ) ) {
-				console.log( 'HP CS: No actions to insert or actions is not an array', this.actions );
-				return;
-			}
 			for ( var i = 0; i < this.actions.length; i++ ) {
 				this.addAction( this.actions[i] );
 			}
