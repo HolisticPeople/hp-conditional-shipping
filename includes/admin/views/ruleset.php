@@ -28,6 +28,41 @@ foreach ( $hp_cs_shipping_methods as $zone ) {
 	<strong>H3 - IDs with slashes:</strong> <?php echo esc_html(implode(', ', preg_grep('/\//', $hp_cs_instance_ids)) ?: 'none'); ?>
 </div>
 <!-- HP CS DEBUG END -->
+<script>
+// #region agent log - H5/H6: Log template content before compilation
+jQuery(document).ready(function($) {
+	var tmplConditions = document.getElementById('tmpl-wcs_row_template');
+	var tmplActions = document.getElementById('tmpl-wcs_action_row_template');
+	
+	console.log('HP CS DEBUG - Template elements found:', {
+		conditions: !!tmplConditions,
+		actions: !!tmplActions
+	});
+	
+	if (tmplConditions) {
+		// Look for problematic patterns
+		var content = tmplConditions.innerHTML;
+		var slashMatches = content.match(/[^<]\/[^>]/g);
+		console.log('HP CS DEBUG - Conditions template slashes:', slashMatches ? slashMatches.slice(0, 10) : 'none');
+		
+		// Try to find the issue around char position that might correspond to line 1374
+		console.log('HP CS DEBUG - Template length:', content.length);
+	}
+	
+	// Try compiling with explicit error catching
+	try {
+		if (typeof wp !== 'undefined' && wp.template) {
+			console.log('HP CS DEBUG - Attempting wp.template compilation...');
+			var compiled = wp.template('wcs_row_template');
+			console.log('HP CS DEBUG - Compilation SUCCESS');
+		}
+	} catch(e) {
+		console.error('HP CS DEBUG - Compilation FAILED:', e.message);
+		console.log('HP CS DEBUG - Error details:', e);
+	}
+});
+// #endregion
+</script>
 <?php
 // #endregion
 ?>
