@@ -3,58 +3,32 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// #region agent log - H1: Log conditions JSON to debug file
-$hp_cs_debug_log = 'c:\\DEV\\.cursor\\debug.log';
+// #region agent log - Debug output to page
 $hp_cs_conditions_json = json_encode( $ruleset->get_conditions() );
 $hp_cs_actions_json = json_encode( $ruleset->get_actions() );
-file_put_contents( $hp_cs_debug_log, json_encode( [
-	'timestamp' => time(),
-	'hypothesisId' => 'H1',
-	'location' => 'ruleset.php:top',
-	'message' => 'Conditions and Actions JSON',
-	'data' => [
-		'conditions_length' => strlen( $hp_cs_conditions_json ),
-		'conditions_preview' => substr( $hp_cs_conditions_json, 0, 500 ),
-		'actions_length' => strlen( $hp_cs_actions_json ),
-		'actions_preview' => substr( $hp_cs_actions_json, 0, 500 ),
-	],
-] ) . "\n", FILE_APPEND );
-// #endregion
-
-// #region agent log - H2: Log filter groups
 $hp_cs_filter_groups = hp_cs_filter_groups();
-file_put_contents( $hp_cs_debug_log, json_encode( [
-	'timestamp' => time(),
-	'hypothesisId' => 'H2',
-	'location' => 'ruleset.php:filter_groups',
-	'message' => 'Filter groups keys',
-	'data' => [
-		'group_keys' => array_keys( $hp_cs_filter_groups ),
-		'filter_keys_sample' => array_keys( $hp_cs_filter_groups['cart']['filters'] ?? [] ),
-	],
-] ) . "\n", FILE_APPEND );
-// #endregion
-
-// #region agent log - H3: Log shipping method instance IDs
 $hp_cs_shipping_methods = hp_cs_shipping_method_options();
 $hp_cs_instance_ids = [];
 foreach ( $hp_cs_shipping_methods as $zone ) {
 	if ( isset( $zone['options'] ) ) {
 		foreach ( $zone['options'] as $id => $method ) {
-			$hp_cs_instance_ids[] = $id;
+			$hp_cs_instance_ids[] = (string) $id;
 		}
 	}
 }
-file_put_contents( $hp_cs_debug_log, json_encode( [
-	'timestamp' => time(),
-	'hypothesisId' => 'H3',
-	'location' => 'ruleset.php:shipping_methods',
-	'message' => 'Shipping method instance IDs',
-	'data' => [
-		'instance_ids' => $hp_cs_instance_ids,
-		'has_slashes' => preg_grep( '/\//', $hp_cs_instance_ids ),
-	],
-] ) . "\n", FILE_APPEND );
+?>
+<!-- HP CS DEBUG START -->
+<div id="hp-cs-debug" style="background:#ffe0e0;border:2px solid red;padding:10px;margin:10px 0;font-family:monospace;font-size:11px;">
+	<strong>HP CS Debug (v<?php echo HP_CS_VERSION; ?>)</strong><br>
+	<strong>H1 - Conditions JSON (<?php echo strlen($hp_cs_conditions_json); ?> chars):</strong><br>
+	<textarea readonly style="width:100%;height:60px;font-size:10px;"><?php echo esc_textarea($hp_cs_conditions_json); ?></textarea><br>
+	<strong>H1 - Actions JSON (<?php echo strlen($hp_cs_actions_json); ?> chars):</strong><br>
+	<textarea readonly style="width:100%;height:60px;font-size:10px;"><?php echo esc_textarea($hp_cs_actions_json); ?></textarea><br>
+	<strong>H3 - Shipping Method IDs:</strong> <?php echo esc_html(implode(', ', $hp_cs_instance_ids)); ?><br>
+	<strong>H3 - IDs with slashes:</strong> <?php echo esc_html(implode(', ', preg_grep('/\//', $hp_cs_instance_ids)) ?: 'none'); ?>
+</div>
+<!-- HP CS DEBUG END -->
+<?php
 // #endregion
 ?>
 
