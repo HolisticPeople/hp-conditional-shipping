@@ -17,12 +17,6 @@ jQuery(document).ready(function($) {
 			this.operators = table.data( 'operators' );
 			this.conditions = table.data( 'conditions' );
 
-			console.log( 'HP CS Conditions Table Init:', {
-				operators: this.operators,
-				conditions: this.conditions,
-				rawAttr: table.attr( 'data-conditions' )
-			});
-
 			this.initTagSearch();
 			this.initMetaSearch();
 			this.initCouponSearch();
@@ -59,7 +53,6 @@ jQuery(document).ready(function($) {
 		 */
 		insertExisting: function() {
 			if ( ! this.conditions || ! Array.isArray( this.conditions ) ) {
-				console.log( 'HP CS: No conditions to insert or conditions is not an array', this.conditions );
 				return;
 			}
 			for ( var i = 0; i < this.conditions.length; i++ ) {
@@ -143,14 +136,7 @@ jQuery(document).ready(function($) {
 			this.table.data( 'index', index + 1 );
 
 			// Get template
-			var row_template;
-			try {
-				row_template = wp.template( 'wcs_row_template' );
-			} catch ( e ) {
-				console.error( 'HP CS: Error compiling wcs_row_template:', e );
-				console.log( 'Template content:', document.getElementById( 'tmpl-wcs_row_template' )?.innerHTML?.substring(0, 500) );
-				return;
-			}
+			var row_template = wp.template( 'wcs_row_template' );
 
 			// Add products
 			var products_data = this.table.data( 'selected-products' );
@@ -434,11 +420,6 @@ jQuery(document).ready(function($) {
 
 			this.actions = table.data( 'actions' );
 
-			console.log( 'HP CS Actions Table Init:', {
-				actions: this.actions,
-				rawAttr: table.attr( 'data-actions' )
-			});
-
 			this.insertExisting();
 			this.insertEmpty();
 
@@ -476,7 +457,6 @@ jQuery(document).ready(function($) {
 		 */
 		insertExisting: function() {
 			if ( ! this.actions || ! Array.isArray( this.actions ) ) {
-				console.log( 'HP CS: No actions to insert or actions is not an array', this.actions );
 				return;
 			}
 			for ( var i = 0; i < this.actions.length; i++ ) {
@@ -545,14 +525,7 @@ jQuery(document).ready(function($) {
 			this.table.data( 'index', index + 1 );
 
 			// Get template
-			var row_template;
-			try {
-				row_template = wp.template( 'wcs_action_row_template' );
-			} catch ( e ) {
-				console.error( 'HP CS: Error compiling wcs_action_row_template:', e );
-				console.log( 'Template content:', document.getElementById( 'tmpl-wcs_action_row_template' )?.innerHTML?.substring(0, 500) );
-				return;
-			}
+			var row_template = wp.template( 'wcs_action_row_template' );
 
 			// Render template and add to the table
 			$( 'tbody', this.table ).append( row_template( data ) );
