@@ -604,4 +604,9 @@ function hp_cs_get_price_per_options() {
 	return [];
 }
 
-
+/**
+ * Currency options.
+ */
+function hp_cs_currency_options() {
+	return function_exists( 'get_woocommerce_currencies' ) ? get_woocommerce_currencies() : [];
+}

@@ -414,7 +414,7 @@ jQuery(document).ready(function($) {
 
 			<div class="value_input wcs_currency_value_input">
 				<select class="wc-enhanced-select" name="wcs_conditions[{{data.index}}][currencies][]" class="select" multiple>
-					<?php foreach ( wcs_currency_options() as $code => $currency ) { ?>
+					<?php foreach ( hp_cs_currency_options() as $code => $currency ) { ?>
 						<option
 							value="<?php echo esc_attr( $code ); ?>"
 							<# if ( data.currencies && jQuery.inArray( '<?php echo esc_js( $code ); ?>', data.currencies ) !== -1 ) { #>
