@@ -2,6 +2,60 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+// #region agent log - H1: Log conditions JSON to debug file
+$hp_cs_debug_log = 'c:\\DEV\\.cursor\\debug.log';
+$hp_cs_conditions_json = json_encode( $ruleset->get_conditions() );
+$hp_cs_actions_json = json_encode( $ruleset->get_actions() );
+file_put_contents( $hp_cs_debug_log, json_encode( [
+	'timestamp' => time(),
+	'hypothesisId' => 'H1',
+	'location' => 'ruleset.php:top',
+	'message' => 'Conditions and Actions JSON',
+	'data' => [
+		'conditions_length' => strlen( $hp_cs_conditions_json ),
+		'conditions_preview' => substr( $hp_cs_conditions_json, 0, 500 ),
+		'actions_length' => strlen( $hp_cs_actions_json ),
+		'actions_preview' => substr( $hp_cs_actions_json, 0, 500 ),
+	],
+] ) . "\n", FILE_APPEND );
+// #endregion
+
+// #region agent log - H2: Log filter groups
+$hp_cs_filter_groups = hp_cs_filter_groups();
+file_put_contents( $hp_cs_debug_log, json_encode( [
+	'timestamp' => time(),
+	'hypothesisId' => 'H2',
+	'location' => 'ruleset.php:filter_groups',
+	'message' => 'Filter groups keys',
+	'data' => [
+		'group_keys' => array_keys( $hp_cs_filter_groups ),
+		'filter_keys_sample' => array_keys( $hp_cs_filter_groups['cart']['filters'] ?? [] ),
+	],
+] ) . "\n", FILE_APPEND );
+// #endregion
+
+// #region agent log - H3: Log shipping method instance IDs
+$hp_cs_shipping_methods = hp_cs_shipping_method_options();
+$hp_cs_instance_ids = [];
+foreach ( $hp_cs_shipping_methods as $zone ) {
+	if ( isset( $zone['options'] ) ) {
+		foreach ( $zone['options'] as $id => $method ) {
+			$hp_cs_instance_ids[] = $id;
+		}
+	}
+}
+file_put_contents( $hp_cs_debug_log, json_encode( [
+	'timestamp' => time(),
+	'hypothesisId' => 'H3',
+	'location' => 'ruleset.php:shipping_methods',
+	'message' => 'Shipping method instance IDs',
+	'data' => [
+		'instance_ids' => $hp_cs_instance_ids,
+		'has_slashes' => preg_grep( '/\//', $hp_cs_instance_ids ),
+	],
+] ) . "\n", FILE_APPEND );
+// #endregion
 ?>
 
 <h2 class="woo-conditional-shipping-heading">
