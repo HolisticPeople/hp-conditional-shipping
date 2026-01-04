@@ -44,11 +44,16 @@ class HP_CS_Admin {
 			return;
 		}
 
+		// jQuery UI dependencies for visual editor.
 		wp_enqueue_script( 'jquery-ui-sortable' );
+		wp_enqueue_script( 'jquery-ui-datepicker' );
+		wp_enqueue_script( 'jquery-ui-autocomplete' );
+
+		// Main admin script.
 		wp_enqueue_script(
 			'hp-conditional-shipping-admin',
 			HP_CS_URL . 'admin/js/hp-conditional-shipping-admin.js',
-			[ 'jquery', 'wp-util', 'jquery-ui-sortable' ],
+			[ 'jquery', 'wp-util', 'jquery-ui-sortable', 'jquery-ui-datepicker', 'jquery-ui-autocomplete' ],
 			HP_CS_VERSION,
 			true
 		);
@@ -57,9 +62,23 @@ class HP_CS_Admin {
 			'hp-conditional-shipping-admin',
 			'hp_cs_admin',
 			[
-				'ajax_url' => admin_url( 'admin-ajax.php' ),
-				'nonce'    => wp_create_nonce( 'hp-cs-toggle-ruleset' ),
+				'ajax_url'  => admin_url( 'admin-ajax.php' ),
+				'nonce'     => wp_create_nonce( 'hp-cs-toggle-ruleset' ),
+				'nonces'    => [
+					'ruleset_toggle' => wp_create_nonce( 'hp-cs-toggle-ruleset' ),
+				],
+				'ajax_urls' => [
+					'toggle_ruleset' => admin_url( 'admin-ajax.php?action=hp_cs_toggle_ruleset' ),
+				],
 			]
+		);
+
+		// Admin CSS.
+		wp_enqueue_style(
+			'hp-conditional-shipping-admin',
+			HP_CS_URL . 'admin/css/hp-conditional-shipping-admin.css',
+			[],
+			HP_CS_VERSION
 		);
 	}
 

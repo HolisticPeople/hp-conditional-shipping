@@ -1,0 +1,1014 @@
+﻿ï»¿[
+    {
+        "id": 43729,
+        "title": "120V appliances &#8211; US only",
+        "operator": "and",
+        "conditions": [
+            {
+                "type": "products",
+                "product_measurement_mode": "highest",
+                "operator": "in",
+                "value": "",
+                "product_ids": [
+                    "42759"
+                ],
+                "postcodes": "",
+                "time_hours": "0",
+                "time_mins": "0"
+            },
+            {
+                "type": "shipping_country",
+                "product_measurement_mode": "highest",
+                "operator": "isnot",
+                "value": "",
+                "postcodes": "",
+                "countries": [
+                    "US"
+                ],
+                "time_hours": "0",
+                "time_mins": "0"
+            }
+        ],
+        "actions": [
+            {
+                "type": "disable_shipping_methods",
+                "shipping_method_ids": [
+                    "_name_match"
+                ],
+                "shipping_method_name_match": "*DHL*\r\n*International*",
+                "error_msg": "",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed"
+            },
+            {
+                "type": "custom_error_msg",
+                "shipping_method_name_match": "",
+                "error_msg": "120V appliances can not be shipped out of the US. Please remove the item from your cart. If you need support, please contact us",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed"
+            }
+        ]
+    },
+    {
+        "id": 43730,
+        "title": "Australia &#8211; $700 max",
+        "operator": "and",
+        "conditions": [
+            {
+                "type": "shipping_country",
+                "product_measurement_mode": "highest",
+                "subset_filter": "",
+                "operator": "is",
+                "value": "",
+                "postcodes": "",
+                "cities": "",
+                "countries": [
+                    "AU"
+                ],
+                "date": "",
+                "time_hours": "0",
+                "time_mins": "0",
+                "guid": "164ee27c9f2ab"
+            },
+            {
+                "type": "subtotal",
+                "product_measurement_mode": "highest",
+                "subset_filter": "",
+                "operator": "gte",
+                "value": "700",
+                "postcodes": "",
+                "cities": "",
+                "date": "",
+                "time_hours": "0",
+                "time_mins": "0",
+                "guid": "43fac4d349628"
+            }
+        ],
+        "actions": [
+            {
+                "type": "disable_shipping_methods",
+                "guid": "67921219333e7",
+                "shipping_method_ids": [
+                    "_all"
+                ],
+                "shipping_method_name_match": "",
+                "error_msg": "",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed",
+                "title": ""
+            },
+            {
+                "type": "custom_error_msg",
+                "guid": "67921219333ea",
+                "shipping_method_name_match": "",
+                "error_msg": "Orders to Australia are limited to $700. Please reduce the items in your cart or contact us for assistance.",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed",
+                "title": ""
+            }
+        ]
+    },
+    {
+        "id": 23437,
+        "title": "Australia no Algae",
+        "operator": "and",
+        "conditions": [
+            {
+                "type": "shipping_country",
+                "product_measurement_mode": "highest",
+                "operator": "is",
+                "value": "",
+                "postcodes": "",
+                "countries": [
+                    "AU"
+                ],
+                "time_hours": "0",
+                "time_mins": "0"
+            },
+            {
+                "type": "products",
+                "product_measurement_mode": "highest",
+                "operator": "in",
+                "value": "",
+                "product_ids": [
+                    "42355",
+                    "42323",
+                    "42595",
+                    "42596",
+                    "42384",
+                    "43484",
+                    "43582",
+                    "43565",
+                    "42429",
+                    "43478"
+                ],
+                "postcodes": "",
+                "time_hours": "0",
+                "time_mins": "0"
+            }
+        ],
+        "actions": [
+            {
+                "type": "custom_error_msg",
+                "shipping_method_name_match": "",
+                "error_msg": "Australia prohibits the importation of Algae.\r\nPlease remove it from your cart or change your destination.",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed"
+            },
+            {
+                "type": "disable_shipping_methods",
+                "shipping_method_ids": [
+                    "_all"
+                ],
+                "shipping_method_name_match": "*DHL*\r\n*USPS*\r\n*UPS*",
+                "error_msg": "",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed"
+            }
+        ]
+    },
+    {
+        "id": 23439,
+        "title": "Brazil &#8211; $450 max",
+        "operator": "and",
+        "conditions": [
+            {
+                "type": "shipping_country",
+                "product_measurement_mode": "highest",
+                "operator": "is",
+                "value": "",
+                "postcodes": "",
+                "countries": [
+                    "BR"
+                ],
+                "time_hours": "0",
+                "time_mins": "0"
+            },
+            {
+                "type": "subtotal",
+                "product_measurement_mode": "highest",
+                "operator": "gt",
+                "value": "450",
+                "postcodes": "",
+                "time_hours": "0",
+                "time_mins": "0"
+            }
+        ],
+        "actions": [
+            {
+                "type": "disable_shipping_methods",
+                "shipping_method_ids": [
+                    "_all"
+                ],
+                "shipping_method_name_match": "",
+                "error_msg": "",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed"
+            },
+            {
+                "type": "custom_error_msg",
+                "shipping_method_name_match": "",
+                "error_msg": "Brazil restricts the importation of supplements to $450. Please reduce your cart or change the destination. Contact us if you have difficulties.",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed"
+            }
+        ]
+    },
+    {
+        "id": 23440,
+        "title": "Brazil &#8211; 3 items max",
+        "operator": "and",
+        "conditions": [
+            {
+                "type": "shipping_country",
+                "product_measurement_mode": "highest",
+                "subset_filter": "",
+                "operator": "is",
+                "value": "",
+                "postcodes": "",
+                "cities": "",
+                "countries": [
+                    "BR"
+                ],
+                "date": "",
+                "time_hours": "0",
+                "time_mins": "0",
+                "guid": "9a586beee4e08"
+            },
+            {
+                "type": "items",
+                "product_measurement_mode": "highest",
+                "subset_filter": "",
+                "operator": "gt",
+                "value": "3",
+                "postcodes": "",
+                "cities": "",
+                "date": "",
+                "time_hours": "0",
+                "time_mins": "0",
+                "guid": "6620023fcdc6c"
+            }
+        ],
+        "actions": [
+            {
+                "type": "disable_shipping_methods",
+                "guid": "679202aa13fb3",
+                "shipping_method_ids": [
+                    "_all"
+                ],
+                "shipping_method_name_match": "",
+                "error_msg": "",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed",
+                "title": ""
+            },
+            {
+                "type": "custom_error_msg",
+                "guid": "679202aa13fb5",
+                "shipping_method_name_match": "",
+                "error_msg": "Brazil restricts the import of supplement items. Please limit your cart to 3 items or fewer, or choose a different destination. Contact us if you need assistance.",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed",
+                "title": ""
+            }
+        ]
+    },
+    {
+        "id": 23442,
+        "title": "Canada &#8211; no mushrooms",
+        "operator": "and",
+        "conditions": [
+            {
+                "type": "shipping_country",
+                "product_measurement_mode": "highest",
+                "operator": "is",
+                "value": "",
+                "postcodes": "",
+                "countries": [
+                    "CA"
+                ],
+                "time_hours": "0",
+                "time_mins": "0"
+            },
+            {
+                "type": "category",
+                "product_measurement_mode": "highest",
+                "operator": "in",
+                "value": "",
+                "category_ids": [
+                    "3309"
+                ],
+                "postcodes": "",
+                "time_hours": "0",
+                "time_mins": "0"
+            }
+        ],
+        "actions": [
+            {
+                "type": "disable_shipping_methods",
+                "shipping_method_ids": [
+                    "_all"
+                ],
+                "shipping_method_name_match": "",
+                "error_msg": "",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed"
+            },
+            {
+                "type": "custom_error_msg",
+                "shipping_method_name_match": "",
+                "error_msg": "Canada restricts the importation of medicinal mushrooms. Please remove from your cart, change the destination or contact us.",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed"
+            }
+        ]
+    },
+    {
+        "id": 43744,
+        "title": "Countries blocked",
+        "operator": "and",
+        "conditions": [
+            {
+                "type": "shipping_country",
+                "product_measurement_mode": "highest",
+                "subset_filter": "",
+                "operator": "is",
+                "value": "",
+                "postcodes": "",
+                "cities": "",
+                "countries": [
+                    "GH",
+                    "MX",
+                    "NG",
+                    "RU",
+                    "UA"
+                ],
+                "date": "",
+                "time_hours": "0",
+                "time_mins": "0",
+                "guid": "5e58d1026af0a"
+            }
+        ],
+        "actions": [
+            {
+                "type": "disable_shipping_methods",
+                "guid": "674c5336da967",
+                "shipping_method_ids": [
+                    "_all"
+                ],
+                "shipping_method_name_match": "",
+                "error_msg": "",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed",
+                "title": ""
+            },
+            {
+                "type": "custom_error_msg",
+                "guid": "674c5336da969",
+                "shipping_method_name_match": "",
+                "error_msg": "Unfortunately, we are unable to ship to the selected country at this time. Please choose a different destination.",
+                "notice": "Unfortunately, shipping to the country chosen is currently unavailable. Please change your destination country",
+                "price": "",
+                "price_mode": "fixed",
+                "title": ""
+            }
+        ]
+    },
+    {
+        "id": 23438,
+        "title": "Customers blocked &#8211; stars an more",
+        "operator": "or",
+        "conditions": [
+            {
+                "type": "customer_role",
+                "product_measurement_mode": "highest",
+                "operator": "is",
+                "value": "",
+                "user_roles": [
+                    "community-4"
+                ],
+                "postcodes": "",
+                "time_hours": "0",
+                "time_mins": "0"
+            },
+            {
+                "type": "shipping_postcode",
+                "product_measurement_mode": "highest",
+                "operator": "is",
+                "value": "",
+                "postcodes": "07512",
+                "time_hours": "0",
+                "time_mins": "0"
+            }
+        ],
+        "actions": [
+            {
+                "type": "disable_shipping_methods",
+                "shipping_method_ids": [
+                    "_all"
+                ],
+                "shipping_method_name_match": "",
+                "error_msg": "",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed"
+            }
+        ]
+    },
+    {
+        "id": 23443,
+        "title": "DHL restricted &#8211; PT, RU, SP, UKR, US, PLO",
+        "operator": "and",
+        "conditions": [
+            {
+                "type": "shipping_country",
+                "product_measurement_mode": "highest",
+                "subset_filter": "",
+                "operator": "is",
+                "value": "",
+                "postcodes": "",
+                "cities": "",
+                "countries": [
+                    "PS",
+                    "PT",
+                    "RU",
+                    "ES",
+                    "UA",
+                    "US"
+                ],
+                "date": "",
+                "time_hours": "0",
+                "time_mins": "0",
+                "guid": "797ba8bd63067"
+            }
+        ],
+        "actions": [
+            {
+                "type": "disable_shipping_methods",
+                "guid": "674c516d2c9de",
+                "shipping_method_ids": [
+                    "_name_match"
+                ],
+                "shipping_method_name_match": "*dhl*",
+                "error_msg": "",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed",
+                "title": ""
+            }
+        ]
+    },
+    {
+        "id": 23449,
+        "title": "International max price $600",
+        "operator": "and",
+        "conditions": [
+            {
+                "type": "shipping_country",
+                "product_measurement_mode": "highest",
+                "subset_filter": "",
+                "operator": "isnot",
+                "value": "",
+                "postcodes": "",
+                "cities": "",
+                "countries": [
+                    "AU",
+                    "BR",
+                    "IL",
+                    "GB",
+                    "US"
+                ],
+                "date": "",
+                "time_hours": "0",
+                "time_mins": "0",
+                "guid": "12ebe08773ac1"
+            },
+            {
+                "type": "subtotal",
+                "product_measurement_mode": "highest",
+                "subset_filter": "",
+                "operator": "gt",
+                "value": "600",
+                "postcodes": "",
+                "cities": "",
+                "date": "",
+                "time_hours": "0",
+                "time_mins": "0",
+                "guid": "05f5655626c60"
+            }
+        ],
+        "actions": [
+            {
+                "type": "disable_shipping_methods",
+                "guid": "674c488b58f74",
+                "shipping_method_ids": [
+                    "_all"
+                ],
+                "shipping_method_name_match": "",
+                "error_msg": "",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed",
+                "title": ""
+            },
+            {
+                "type": "custom_error_msg",
+                "guid": "674c488b58f75",
+                "shipping_method_name_match": "",
+                "error_msg": "International shipping is restricted for supplement orders exceeding $600. Please remove some supplements or reduce the total to below $600. Contact us if you need assistance.",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed",
+                "title": ""
+            }
+        ]
+    },
+    {
+        "id": 23446,
+        "title": "International max weight 10lb",
+        "operator": "and",
+        "conditions": [
+            {
+                "type": "shipping_country",
+                "product_measurement_mode": "highest",
+                "subset_filter": "",
+                "operator": "isnot",
+                "value": "",
+                "postcodes": "",
+                "emails": "",
+                "phones": "",
+                "cities": "",
+                "countries": [
+                    "US"
+                ],
+                "date": "",
+                "time_hours": "0",
+                "time_mins": "0",
+                "guid": "57b162b0f4c55"
+            },
+            {
+                "type": "weight",
+                "product_measurement_mode": "highest",
+                "subset_filter": "",
+                "operator": "gt",
+                "value": "10",
+                "postcodes": "",
+                "emails": "",
+                "phones": "",
+                "cities": "",
+                "date": "",
+                "time_hours": "0",
+                "time_mins": "0",
+                "guid": "727b406e59bb1"
+            },
+            {
+                "type": "product_tags",
+                "product_measurement_mode": "highest",
+                "subset_filter": "",
+                "operator": "notin",
+                "value": "",
+                "product_tags": [
+                    "6304"
+                ],
+                "postcodes": "",
+                "emails": "",
+                "phones": "",
+                "cities": "",
+                "date": "",
+                "time_hours": "0",
+                "time_mins": "0",
+                "guid": "4b1e926cac705"
+            }
+        ],
+        "actions": [
+            {
+                "type": "disable_shipping_methods",
+                "guid": "674c55c61f240",
+                "shipping_method_ids": [
+                    "_all"
+                ],
+                "shipping_method_name_match": "",
+                "error_msg": "",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed",
+                "price_per": "",
+                "title": ""
+            },
+            {
+                "type": "custom_error_msg",
+                "guid": "674c55c61f241",
+                "shipping_method_name_match": "",
+                "error_msg": "The maximum weight for a single international order has been exceeded. Please remove some items.",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed",
+                "price_per": "",
+                "title": ""
+            }
+        ]
+    },
+    {
+        "id": 23444,
+        "title": "Israel &#8211; $480 max",
+        "operator": "and",
+        "conditions": [
+            {
+                "type": "shipping_country",
+                "product_measurement_mode": "highest",
+                "subset_filter": "",
+                "operator": "is",
+                "value": "",
+                "postcodes": "",
+                "emails": "",
+                "phones": "",
+                "cities": "",
+                "countries": [
+                    "IL"
+                ],
+                "date": "",
+                "time_hours": "0",
+                "time_mins": "0",
+                "guid": "1200354a4f1eb"
+            },
+            {
+                "type": "subtotal",
+                "product_measurement_mode": "highest",
+                "subset_filter": "",
+                "operator": "gt",
+                "value": "480",
+                "postcodes": "",
+                "emails": "",
+                "phones": "",
+                "cities": "",
+                "date": "",
+                "time_hours": "0",
+                "time_mins": "0",
+                "guid": "92c46bf4acb87"
+            },
+            {
+                "type": "product_tags",
+                "product_measurement_mode": "highest",
+                "subset_filter": "",
+                "operator": "notin",
+                "value": "",
+                "product_tags": [
+                    "6304"
+                ],
+                "postcodes": "",
+                "emails": "",
+                "phones": "",
+                "cities": "",
+                "date": "",
+                "time_hours": "0",
+                "time_mins": "0",
+                "guid": "45e650470985c"
+            }
+        ],
+        "actions": [
+            {
+                "type": "disable_shipping_methods",
+                "guid": "68dcfabde7a32",
+                "shipping_method_ids": [
+                    "_all"
+                ],
+                "shipping_method_name_match": "",
+                "error_msg": "",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed",
+                "price_per": "",
+                "title": ""
+            },
+            {
+                "type": "custom_error_msg",
+                "guid": "68dcfabde7a33",
+                "shipping_method_name_match": "",
+                "error_msg": "Shipping to Israel is restricted to $480 in products. Please reduce the cart total or contact us.",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed",
+                "price_per": "",
+                "title": ""
+            }
+        ]
+    },
+    {
+        "id": 23445,
+        "title": "Israel &#8211; 14 items max",
+        "operator": "and",
+        "conditions": [
+            {
+                "type": "shipping_country",
+                "product_measurement_mode": "highest",
+                "subset_filter": "",
+                "operator": "is",
+                "value": "",
+                "postcodes": "",
+                "emails": "",
+                "phones": "",
+                "cities": "",
+                "countries": [
+                    "IL"
+                ],
+                "date": "",
+                "time_hours": "0",
+                "time_mins": "0",
+                "guid": "75c8ed5be29b8"
+            },
+            {
+                "type": "items",
+                "product_measurement_mode": "highest",
+                "subset_filter": "",
+                "operator": "gt",
+                "value": "14",
+                "postcodes": "",
+                "emails": "",
+                "phones": "",
+                "cities": "",
+                "date": "",
+                "time_hours": "0",
+                "time_mins": "0",
+                "guid": "4d126924072cb"
+            },
+            {
+                "type": "product_tags",
+                "product_measurement_mode": "highest",
+                "subset_filter": "",
+                "operator": "notin",
+                "value": "",
+                "product_tags": [
+                    "6304"
+                ],
+                "postcodes": "",
+                "emails": "",
+                "phones": "",
+                "cities": "",
+                "date": "",
+                "time_hours": "0",
+                "time_mins": "0",
+                "guid": "eee754e8f191c"
+            }
+        ],
+        "actions": [
+            {
+                "type": "disable_shipping_methods",
+                "guid": "68dcfaec7ec76",
+                "shipping_method_ids": [
+                    "_all"
+                ],
+                "shipping_method_name_match": "",
+                "error_msg": "",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed",
+                "price_per": "",
+                "title": ""
+            },
+            {
+                "type": "custom_error_msg",
+                "guid": "68dcfaec7ec78",
+                "shipping_method_name_match": "",
+                "error_msg": "Shipping to Israel is restricted to 14 items or less",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed",
+                "price_per": "",
+                "title": ""
+            }
+        ]
+    },
+    {
+        "id": 23447,
+        "title": "Supplements restricted countries",
+        "operator": "and",
+        "conditions": [
+            {
+                "type": "shipping_country",
+                "product_measurement_mode": "highest",
+                "subset_filter": "",
+                "operator": "is",
+                "value": "",
+                "postcodes": "",
+                "cities": "",
+                "countries": [
+                    "NO",
+                    "PT",
+                    "ES",
+                    "SE"
+                ],
+                "date": "",
+                "time_hours": "0",
+                "time_mins": "0",
+                "guid": "a7dc068962a14"
+            },
+            {
+                "type": "category",
+                "product_measurement_mode": "highest",
+                "subset_filter": "",
+                "operator": "in",
+                "value": "",
+                "category_ids": [
+                    "3513"
+                ],
+                "postcodes": "",
+                "cities": "",
+                "date": "",
+                "time_hours": "0",
+                "time_mins": "0",
+                "guid": "9de07a1a676ee"
+            }
+        ],
+        "actions": [
+            {
+                "type": "disable_shipping_methods",
+                "guid": "674c5fe8c2c50",
+                "shipping_method_ids": [
+                    "_all"
+                ],
+                "shipping_method_name_match": "",
+                "error_msg": "",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed",
+                "title": ""
+            },
+            {
+                "type": "custom_error_msg",
+                "guid": "674c5fe8c2c52",
+                "shipping_method_name_match": "",
+                "error_msg": "The chosen destination country restricts the import of supplements. Please remove supplements from your cart, select a different shipping destination, or contact us for assistance.",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed",
+                "title": ""
+            }
+        ]
+    },
+    {
+        "id": 23448,
+        "title": "Thailand restricted products",
+        "operator": "and",
+        "conditions": [
+            {
+                "type": "shipping_country",
+                "product_measurement_mode": "highest",
+                "operator": "is",
+                "value": "",
+                "postcodes": "",
+                "countries": [
+                    "TH"
+                ],
+                "time_hours": "0",
+                "time_mins": "0"
+            },
+            {
+                "type": "products",
+                "product_measurement_mode": "highest",
+                "operator": "in",
+                "value": "",
+                "product_ids": [
+                    "43559",
+                    "42769",
+                    "42766",
+                    "42858",
+                    "43509",
+                    "42299",
+                    "42298"
+                ],
+                "postcodes": "",
+                "time_hours": "0",
+                "time_mins": "0"
+            }
+        ],
+        "actions": [
+            {
+                "type": "disable_shipping_methods",
+                "shipping_method_ids": [
+                    "_all"
+                ],
+                "shipping_method_name_match": "",
+                "error_msg": "",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed"
+            },
+            {
+                "type": "custom_error_msg",
+                "shipping_method_name_match": "",
+                "error_msg": "Thailand restricts the importation of CBD products and Vitamin C. Please remove from your cart or change destination.",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed"
+            }
+        ]
+    },
+    {
+        "id": 23450,
+        "title": "United Kingdom &#8211; max $460",
+        "operator": "and",
+        "conditions": [
+            {
+                "type": "shipping_country",
+                "product_measurement_mode": "highest",
+                "operator": "is",
+                "value": "",
+                "postcodes": "",
+                "countries": [
+                    "GB"
+                ],
+                "time_hours": "0",
+                "time_mins": "0"
+            },
+            {
+                "type": "subtotal",
+                "product_measurement_mode": "highest",
+                "operator": "gt",
+                "value": "460",
+                "postcodes": "",
+                "time_hours": "0",
+                "time_mins": "0"
+            },
+            {
+                "type": "category",
+                "product_measurement_mode": "highest",
+                "operator": "in",
+                "value": "",
+                "category_ids": [
+                    "3262"
+                ],
+                "postcodes": "",
+                "time_hours": "0",
+                "time_mins": "0"
+            }
+        ],
+        "actions": [
+            {
+                "type": "disable_shipping_methods",
+                "shipping_method_ids": [
+                    "_all"
+                ],
+                "shipping_method_name_match": "",
+                "error_msg": "",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed"
+            },
+            {
+                "type": "custom_error_msg",
+                "shipping_method_name_match": "",
+                "error_msg": "UK supplements purchases are restricted to $460. Please reduce your order, change the shipping destination or contact us.",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed"
+            }
+        ]
+    },
+    {
+        "id": 23452,
+        "title": "USPS Restricted Countries",
+        "operator": "and",
+        "conditions": [
+            {
+                "type": "shipping_country",
+                "product_measurement_mode": "highest",
+                "operator": "is",
+                "value": "",
+                "postcodes": "",
+                "countries": [
+                    "CA",
+                    "DE",
+                    "SA"
+                ],
+                "time_hours": "0",
+                "time_mins": "0"
+            }
+        ],
+        "actions": [
+            {
+                "type": "disable_shipping_methods",
+                "shipping_method_ids": [
+                    "_name_match"
+                ],
+                "shipping_method_name_match": "*USPS*",
+                "error_msg": "",
+                "notice": "",
+                "price": "",
+                "price_mode": "fixed"
+            }
+        ]
+    }
+]

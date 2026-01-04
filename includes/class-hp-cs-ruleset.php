@@ -57,6 +57,58 @@ class HP_CS_Ruleset {
 	}
 
 	/**
+	 * Get products selected in conditions (for admin UI).
+	 */
+	public function get_products() {
+		$product_ids = [];
+		foreach ( $this->get_conditions() as $condition ) {
+			if ( isset( $condition['product_ids'] ) && is_array( $condition['product_ids'] ) ) {
+				$product_ids = array_merge( $product_ids, $condition['product_ids'] );
+			}
+		}
+
+		$products = [];
+		foreach ( array_unique( $product_ids ) as $product_id ) {
+			$product = wc_get_product( $product_id );
+			if ( $product ) {
+				$products[ $product_id ] = wp_kses_post( $product->get_formatted_name() );
+			}
+		}
+
+		return $products;
+	}
+
+	/**
+	 * Get tags selected in conditions (for admin UI).
+	 */
+	public function get_tags() {
+		$tag_ids = [];
+		foreach ( $this->get_conditions() as $condition ) {
+			if ( isset( $condition['product_tags'] ) && is_array( $condition['product_tags'] ) ) {
+				$tag_ids = array_merge( $tag_ids, $condition['product_tags'] );
+			}
+		}
+
+		$tags = [];
+		foreach ( array_unique( $tag_ids ) as $tag_id ) {
+			$tag = get_term( $tag_id, 'product_tag' );
+			if ( $tag && ! is_wp_error( $tag ) ) {
+				$tags[ $tag_id ] = wp_kses_post( $tag->name );
+			}
+		}
+
+		return $tags;
+	}
+
+	/**
+	 * Get coupons selected in conditions (for admin UI - stub for now).
+	 */
+	public function get_coupons() {
+		// Stub: We don't support coupon conditions yet, return empty array.
+		return [];
+	}
+
+	/**
 	 * Validate ruleset conditions for a given package.
 	 *
 	 * Important: compatibility with reference plugin:
