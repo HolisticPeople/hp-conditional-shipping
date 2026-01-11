@@ -1,0 +1,750 @@
+.woocommerce table.form-table table.wcs-table {
+  width: 100%;
+  background: #fff;
+  margin: 0 0 1.5em;
+  table-layout: fixed;
+  /* AND / OR select field */
+  /* Product meta */
+}
+
+.woocommerce table.form-table table.wcs-table td.wcs-condition,
+.woocommerce table.form-table table.wcs-table td.wcs-action {
+  width: 33%;
+}
+
+.woocommerce table.form-table table.wcs-table td.wcs-operator,
+.woocommerce table.form-table table.wcs-table td.wcs-methods {
+  width: 33%;
+}
+
+.woocommerce table.form-table table.wcs-table td.wcs-values {
+  width: 32%;
+}
+
+.woocommerce table.form-table table.wcs-table td.wcs-remove {
+  width: 20px;
+  vertical-align: middle;
+  padding-left: 0;
+}
+
+.woocommerce table.form-table table.wcs-table .select2-container {
+  min-width: 0 !important;
+  margin-bottom: 0 !important;
+  width: 100% !important;
+}
+
+.woocommerce table.form-table table.wcs-table .select2-container .select2-selection__rendered {
+  line-height: 22px !important;
+  padding: 0 5px;
+}
+
+.woocommerce table.form-table table.wcs-table .select2-container .select2-selection__rendered li {
+  margin: 5px 5px 0 0;
+}
+
+.woocommerce table.form-table table.wcs-table .select2-container .select2-selection__choice {
+  line-height: 16px;
+}
+
+.woocommerce table.form-table table.wcs-table .select2-container .select2-selection--single {
+  height: 32px !important;
+}
+
+.woocommerce table.form-table table.wcs-table .select2-container .select2-search .select2-search__field {
+  line-height: 22px;
+  min-height: 22px;
+  min-width: auto;
+  padding: 0;
+}
+
+.woocommerce table.form-table table.wcs-table .wcs-match-by-name {
+  display: none;
+  margin-top: 10px;
+}
+
+.woocommerce table.form-table table.wcs-table td.wcs-remove {
+  text-align: right;
+  vertical-align: top;
+}
+
+.woocommerce table.form-table table.wcs-table td.wcs-remove a.wcs-remove-row {
+  color: #646970;
+  text-decoration: none;
+}
+
+.woocommerce table.form-table table.wcs-table td.wcs-remove a.wcs-remove-row:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.woocommerce table.form-table table.wcs-table td.wcs-remove a.wcs-remove-row .dashicons {
+  line-height: 34px;
+}
+
+.woocommerce table.form-table table.wcs-table tr td {
+  vertical-align: middle;
+  margin: 0;
+  line-height: 24px;
+  padding: 1em;
+  border-bottom: 2px solid #f9f9f9;
+  vertical-align: top;
+}
+
+.woocommerce table.form-table table.wcs-table tbody tr:last-child td, .woocommerce table.form-table table.wcs-table tbody tr:last-child th {
+  border-bottom: none;
+}
+
+.woocommerce table.form-table table.wcs-table tr.action_row .value_input,
+.woocommerce table.form-table table.wcs-table tr.condition_row .value_input {
+  display: none;
+}
+
+.woocommerce table.form-table table.wcs-table .value_input {
+  width: 100%;
+}
+
+.woocommerce table.form-table table.wcs-table select {
+  width: 100%;
+}
+
+.woocommerce table.form-table table.wcs-table textarea {
+  width: 100%;
+}
+
+.woocommerce table.form-table table.wcs-table tr th input[type="text"],
+.woocommerce table.form-table table.wcs-table tr td input[type="text"],
+.woocommerce table.form-table table.wcs-table tr th select,
+.woocommerce table.form-table table.wcs-table tr td select {
+  max-width: 100%;
+  line-height: 32px;
+}
+
+.woocommerce table.form-table table.wcs-table .wcs-operator-inputs {
+  display: flex;
+  width: 100%;
+  flex-wrap: nowrap;
+}
+
+.woocommerce table.form-table table.wcs-table .wcs-operator-inputs > div {
+  flex: auto;
+  width: 50%;
+}
+
+.woocommerce table.form-table table.wcs-table .wcs-operator-inputs .wcs_product_measurement_mode_input,
+.woocommerce table.form-table table.wcs-table .wcs-operator-inputs .wcs_subset_filter_input {
+  margin-right: 10px;
+}
+
+.woocommerce table.form-table table.wcs-table select[name="wcs_operator"] {
+  line-height: 28px;
+  width: auto !important;
+}
+
+.woocommerce table.form-table table.wcs-table .wcs_text_value_input {
+  width: 100%;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-subtotal .wcs_subtotal_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-subtotal .wcs_text_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-subtotal .wcs_subset_filter_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table .wcs-value-checkbox {
+  font-size: 12px;
+  line-height: 16px;
+  margin-top: 5px;
+}
+
+.woocommerce table.form-table table.wcs-table .wcs-value-checkbox label {
+  vertical-align: bottom;
+}
+
+.woocommerce table.form-table table.wcs-table .wcs-value-checkbox input[type="checkbox"] {
+  margin-bottom: 0;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-product_attrs .wcs_product_attrs_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type- select.wcs_operator_select {
+  display: none;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-weight .wcs_text_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-height_total .wcs_text_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-length_total .wcs_text_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-width_total .wcs_text_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-volume .wcs_text_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-product_weight .wcs_text_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-product_height .wcs_text_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-product_length .wcs_text_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-product_width .wcs_text_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-product_price .wcs_text_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-product_weight .wcs_product_measurement_mode_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-product_height .wcs_product_measurement_mode_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-product_length .wcs_product_measurement_mode_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-product_width .wcs_product_measurement_mode_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-product_price .wcs_product_measurement_mode_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-product_meta .wcs-condition .wcs-condition-inputs {
+  display: flex;
+  width: 100%;
+  flex-wrap: nowrap;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-product_meta .wcs-condition .wcs-condition-inputs > div {
+  flex: auto;
+  width: 50%;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-product_meta .wcs-condition .wcs-condition-inputs .wcs_product_meta_key_input {
+  display: block;
+  margin-left: 10px;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-product_meta .wcs-condition .wcs-condition-inputs .wcs_product_meta_key_input .select2-container .select2-selection--single {
+  height: 34px !important;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-product_meta .wcs-condition .wcs-condition-inputs .wcs_product_meta_key_input .select2-container .select2-selection--single .select2-selection__arrow {
+  height: 33px;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-product_meta .wcs-condition .wcs-condition-inputs .wcs_product_meta_key_input .select2-container .select2-selection__rendered {
+  line-height: 34px !important;
+  padding-right: 24px !important;
+  padding-left: 8px !important;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-product_meta.wcs-operator-gt .wcs_product_measurement_mode_input, .woocommerce table.form-table table.wcs-table tr.wcs-type-product_meta.wcs-operator-gte .wcs_product_measurement_mode_input, .woocommerce table.form-table table.wcs-table tr.wcs-type-product_meta.wcs-operator-lt .wcs_product_measurement_mode_input, .woocommerce table.form-table table.wcs-table tr.wcs-type-product_meta.wcs-operator-lte .wcs_product_measurement_mode_input, .woocommerce table.form-table table.wcs-table tr.wcs-type-product_meta.wcs-operator-e .wcs_product_measurement_mode_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-product_meta.wcs-operator-gt .wcs_text_value_input, .woocommerce table.form-table table.wcs-table tr.wcs-type-product_meta.wcs-operator-gte .wcs_text_value_input, .woocommerce table.form-table table.wcs-table tr.wcs-type-product_meta.wcs-operator-lt .wcs_text_value_input, .woocommerce table.form-table table.wcs-table tr.wcs-type-product_meta.wcs-operator-lte .wcs_text_value_input, .woocommerce table.form-table table.wcs-table tr.wcs-type-product_meta.wcs-operator-e .wcs_text_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-product_meta.wcs-operator-in .wcs_textarea_value_input, .woocommerce table.form-table table.wcs-table tr.wcs-type-product_meta.wcs-operator-exclusive .wcs_textarea_value_input, .woocommerce table.form-table table.wcs-table tr.wcs-type-product_meta.wcs-operator-notin .wcs_textarea_value_input, .woocommerce table.form-table table.wcs-table tr.wcs-type-product_meta.wcs-operator-allin .wcs_textarea_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-items .wcs_text_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-items .wcs_items_value_input {
+  display: block;
+  font-size: 12px;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-items .wcs_subset_filter_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-volume .wcs_subset_filter_input,
+.woocommerce table.form-table table.wcs-table tr.wcs-type-weight .wcs_subset_filter_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table .wcs-desc {
+  font-size: .9em;
+  color: #999;
+  font-style: italic;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-products .wcs_product_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-shipping_class .wcs_shipping_class_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-category .wcs_category_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-product_tags .wcs_product_tag_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-customer_role .wcs_user_role_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-coupon .wcs_coupon_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-currency .wcs_currency_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-billing_company.wcs-operator-contains .wcs_text_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-shipping_company.wcs-operator-contains .wcs_text_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-billing_email .wcs_email_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-billing_email.wcs-operator-exists .wcs_email_value_input,
+.woocommerce table.form-table table.wcs-table tr.wcs-type-billing_email.wcs-operator-notexists .wcs_email_value_input {
+  display: none;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-billing_phone .wcs_phone_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-billing_phone.wcs-operator-exists .wcs_phone_value_input,
+.woocommerce table.form-table table.wcs-table tr.wcs-type-billing_phone.wcs-operator-notexists .wcs_phone_value_input {
+  display: none;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-shipping_postcode .wcs_postcode_value_input,
+.woocommerce table.form-table table.wcs-table tr.wcs-type-billing_postcode .wcs_postcode_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-shipping_city .wcs_city_value_input,
+.woocommerce table.form-table table.wcs-table tr.wcs-type-billing_city .wcs_city_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-shipping_country .wcs_country_value_input,
+.woocommerce table.form-table table.wcs-table tr.wcs-type-billing_country .wcs_country_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-shipping_state .wcs_state_value_input,
+.woocommerce table.form-table table.wcs-table tr.wcs-type-billing_state .wcs_state_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-weekdays .wcs_weekdays_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-date .wcs_date_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-time .wcs_time_value_input {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-time .wcs_time_value_input > select {
+  flex: none;
+  width: auto;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-time .wcs_time_value_input > span {
+  flex: none;
+  line-height: 34px;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-orders .wcs_text_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-orders .wcs_orders_value_input {
+  display: block;
+  font-size: 12px;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-orders .wcs_orders_status_input {
+  margin: 5px 0;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-stock_status .wcs_stock_status_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-type-user_pms_plans .wcs_user_pms_plans_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type- td.wcs_title_value_input,
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type- td.wcs-methods * {
+  display: none;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-set_price .wcs_price_value_input,
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-increase_price .wcs_price_value_input,
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-decrease_price .wcs_price_value_input {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-set_price .wcs_price_value_input input[type="number"],
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-increase_price .wcs_price_value_input input[type="number"],
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-decrease_price .wcs_price_value_input input[type="number"] {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 34px;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-set_price .wcs_price_value_input select,
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-increase_price .wcs_price_value_input select,
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-decrease_price .wcs_price_value_input select {
+  width: 100%;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-set_price .wcs_price_value_input .wcs_price_per_input,
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-increase_price .wcs_price_value_input .wcs_price_per_input,
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-decrease_price .wcs_price_value_input .wcs_price_per_input {
+  display: none;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-set_price.wcs-price-mode-per_piece .wcs_price_per_input, .woocommerce table.form-table table.wcs-table tr.wcs-action-type-set_price.wcs-price-mode-per_volume .wcs_price_per_input, .woocommerce table.form-table table.wcs-table tr.wcs-action-type-set_price.wcs-price-mode-per_weight_unit .wcs_price_per_input,
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-increase_price.wcs-price-mode-per_piece .wcs_price_per_input,
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-increase_price.wcs-price-mode-per_volume .wcs_price_per_input,
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-increase_price.wcs-price-mode-per_weight_unit .wcs_price_per_input,
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-decrease_price.wcs-price-mode-per_piece .wcs_price_per_input,
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-decrease_price.wcs-price-mode-per_volume .wcs_price_per_input,
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-decrease_price.wcs-price-mode-per_weight_unit .wcs_price_per_input {
+  display: block !important;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-set_title .wcs_title_value_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-set_title .wcs_title_value_input input {
+  display: block;
+  width: 100%;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-custom_error_msg td.wcs-methods .select2,
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-custom_error_msg td.wcs-methods select {
+  display: none;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-custom_error_msg .wcs_error_msg_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-shipping_notice .wcs_notice_input {
+  display: block;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-shipping_notice .wcs_notice_input .wcs-notice-style {
+  margin-top: 5px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-shipping_notice .wcs_notice_input .wcs-notice-style label {
+  display: block;
+  flex: none;
+  margin-right: 5px;
+  line-height: 34px;
+}
+
+.woocommerce table.form-table table.wcs-table tr.wcs-action-type-shipping_notice .wcs_notice_input .wcs-notice-style select {
+  display: block;
+  flex: auto;
+}
+
+table.wcs-rulesets {
+  margin-bottom: 30px;
+}
+
+table.wcs-rulesets td.wcs-ruleset-sort {
+  cursor: move;
+  font-size: 15px;
+  text-align: center;
+}
+
+table.wcs-rulesets td.wcs-ruleset-sort::before {
+  content: "\f333";
+  font-family: Dashicons;
+  text-align: center;
+  line-height: 1;
+  color: #999;
+  display: block;
+  width: 17px;
+  float: left;
+  height: 100%;
+  line-height: 24px;
+}
+
+table.wcs-rulesets td, table.wcs-rulesets th {
+  vertical-align: top;
+  line-height: 24px;
+  padding: 1em !important;
+  font-size: 14px;
+  background: #fff;
+  display: table-cell !important;
+}
+
+table.wcs-rulesets td li, table.wcs-rulesets th li {
+  line-height: 24px;
+  font-size: 14px;
+}
+
+table.wcs-rulesets td .woocommerce-help-tip, table.wcs-rulesets th .woocommerce-help-tip {
+  margin: 0 !important;
+}
+
+table.wcs-rulesets thead th {
+  vertical-align: middle;
+}
+
+table.wcs-rulesets tbody.wcs-ruleset-rows td {
+  border-top: 2px solid #f9f9f9;
+}
+
+table.wcs-rulesets tbody.wcs-ruleset-rows tr:first-child td {
+  border-top: 0;
+}
+
+table.wcs-rulesets ul, table.wcs-rulesets p {
+  margin: 0;
+}
+
+table.wcs-rulesets .wcs-ruleset-name input, table.wcs-rulesets .wcs-ruleset-name select, table.wcs-rulesets .wcs-ruleset-name textarea {
+  width: 100%;
+}
+
+table.wcs-rulesets .wcs-ruleset-name .wcs-row-actions {
+  color: #a7aaad;
+  font-size: 13px;
+  padding: 2px 0 0;
+  visibility: hidden;
+}
+
+table.wcs-rulesets .wcs-ruleset-name:hover .wcs-row-actions {
+  visibility: visible;
+}
+
+table.wcs-rulesets .wcs-ruleset-name a.wcs-ruleset-delete {
+  color: #a00;
+}
+
+table.wcs-rulesets .wcs-ruleset-name a.wcs-ruleset-delete:hover {
+  color: red;
+}
+
+table.wcs-rulesets .wcs-ruleset-status .woocommerce-input-toggle {
+  cursor: pointer;
+}
+
+table.wcs-rulesets tfoot input, table.wcs-rulesets tfoot select {
+  vertical-align: middle !important;
+}
+
+table.wcs-rulesets tfoot .button-secondary {
+  float: right;
+}
+
+.ui-autocomplete {
+  z-index: 150000 !important;
+}
+
+/**
+ * Health check
+ */
+.woo-conditional-shipping-health-check .issue-container {
+  margin-bottom: 10px;
+  line-height: 24px;
+  font-size: 14px;
+  background: #fff9db;
+  color: #91300a;
+  border: 1px solid #ffd8a8;
+}
+
+.woo-conditional-shipping-health-check .issue-container .title {
+  border-bottom: 1px solid #ffd8a8;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.woo-conditional-shipping-health-check .issue-container .title .toggle-indicator::before {
+  content: "\f140";
+  display: inline-block;
+  font: normal 20px/1 dashicons;
+  speak: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-decoration: none;
+  float: right;
+}
+
+.woo-conditional-shipping-health-check .issue-container .title .toggle-indicator.open::before {
+  content: "\f142";
+}
+
+.woo-conditional-shipping-health-check .issue-container .details {
+  display: none;
+  padding: 20px;
+}
+
+.woo-conditional-shipping-health-check .issue-container .details .fix {
+  margin-top: 10px;
+}
+
+.woo-conditional-shipping-health-check .issue-container .details .fix ul {
+  font-weight: normal;
+  list-style: disc;
+  padding-left: 20px;
+  margin: 10px 0 0;
+}
+
+/**
+ * Welcome form (Pro only)
+ */
+#wcs-welcome-form {
+  background: #ffffff;
+  text-align: center;
+  padding: 2em;
+  margin: 2em 0 0;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 0px 1px;
+  border-radius: 4px;
+}
+
+#wcs-welcome-form .wcs-logo img {
+  display: inline-block;
+  max-height: 42px;
+  margin: 0 0 1em;
+}
+
+#wcs-welcome-form p {
+  line-height: 1.4;
+  font-size: 14px;
+}
+
+#wcs-welcome-form div.form-inputs {
+  margin: 1.5em 0 2.5em;
+  vertical-align: top;
+}
+
+#wcs-welcome-form div.form-inputs input {
+  vertical-align: top;
+}
+
+#wcs-welcome-form div.form-inputs input[type="text"] {
+  width: 300px;
+}
+
+#wcs-welcome-form div.form-inputs .wcs-spinner {
+  background: url("../img/wpspin.gif") no-repeat center left;
+  width: 16px;
+  height: 30px;
+  line-height: 30px;
+  margin-left: 5px;
+  display: inline-block;
+  visibility: hidden;
+}
+
+#wcs-welcome-form .result .wcs-success {
+  color: #2b8a3e;
+}
+
+#wcs-welcome-form .result .wcs-error {
+  color: #c92a2a;
+}
+
+/**
+ * License status label (Pro only)
+ */
+.we-license-status-label {
+  color: #ffffff;
+  padding: 5px 7px;
+  font-size: 13px;
+  border-radius: 5px;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+.we-license-status-label.license-ok {
+  background: #2b8a3e;
+  color: #ffffff;
+}
+
+.we-license-status-label.license-disabled {
+  background: #c92a2a;
+}
+
+.we-license-status-label.license-unknown {
+  background: #212529;
+}
+
+.we-license-error {
+  display: inline-block;
+  margin-left: 5px;
+}
+
+.we-license-last-checked {
+  color: #666666;
+  margin-top: 10px;
+}
+
+.we-license-renew {
+  margin-top: 10px;
+}
+
+#woo-conditional-shipping-license-nag {
+  display: block;
+}
