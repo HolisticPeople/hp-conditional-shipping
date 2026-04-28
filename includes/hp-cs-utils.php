@@ -16,6 +16,101 @@ function hp_cs_bump_cache_versions() {
 	}
 }
 
+function hp_cs_get_mode() {
+	$mode = (string) get_option( 'hp_cs_mode', 'audit' );
+	return in_array( $mode, [ 'audit', 'enforce', 'disabled' ], true ) ? $mode : 'audit';
+}
+
+function hp_cs_is_enforcing() {
+	return hp_cs_get_mode() === 'enforce';
+}
+
+function hp_cs_normalize_discount_rule( array $rule ) {
+	return array_merge(
+		[
+			'enabled'                => 'no',
+			'label'                  => '',
+			'shipping_class'         => '',
+			'min_amount'             => 0,
+			'percentage_discount'    => 0,
+			'deduct_sale_discount'   => 'no',
+			'deduct_coupon_discount' => 'no',
+			'surface'                => 'classic',
+			'shipping_method_ids'    => [ '_all' ],
+			'shipping_method_name_match' => '',
+			'order'                  => 0,
+		],
+		$rule
+	);
+}
+
+function hp_cs_get_shipping_discount_rules() {
+	$rules = get_option( 'hp_cs_shipping_discount_rules', [] );
+	if ( ! is_array( $rules ) ) {
+		return [];
+	}
+
+	$rules = array_map( 'hp_cs_normalize_discount_rule', array_values( $rules ) );
+	usort(
+		$rules,
+		function ( $a, $b ) {
+			return (int) ( $a['order'] ?? 0 ) <=> (int) ( $b['order'] ?? 0 );
+		}
+	);
+
+	return $rules;
+}
+
+function hp_cs_maybe_import_wc_shipping_discount_rules() {
+	if ( get_option( 'hp_cs_wc_shipping_discount_imported', '' ) === 'yes' ) {
+		return;
+	}
+
+	$settings = get_option( 'woocommerce_wc-shipping-discount_settings', [] );
+	if ( ! is_array( $settings ) || empty( $settings['rules'] ) || ! is_array( $settings['rules'] ) ) {
+		return;
+	}
+
+	$existing = hp_cs_get_shipping_discount_rules();
+	$order    = count( $existing );
+
+	foreach ( $settings['rules'] as $shipping_class => $source_rule ) {
+		if ( ! is_array( $source_rule ) ) {
+			continue;
+		}
+
+		$source_rule = array_merge(
+			[
+				'enabled'                => 'no',
+				'min_amount'             => 0,
+				'percentage_discount'    => 0,
+				'deduct_sale_discount'   => 'no',
+				'deduct_coupon_discount' => 'no',
+			],
+			$source_rule
+		);
+
+		$existing[] = hp_cs_normalize_discount_rule(
+			[
+				'enabled'                => $source_rule['enabled'] === 'yes' ? 'yes' : 'no',
+				'label'                  => sprintf( 'Imported: %s', (string) $shipping_class ),
+				'shipping_class'         => sanitize_title( (string) $shipping_class ),
+				'min_amount'             => (float) $source_rule['min_amount'],
+				'percentage_discount'    => (float) $source_rule['percentage_discount'],
+				'deduct_sale_discount'   => $source_rule['deduct_sale_discount'] === 'yes' ? 'yes' : 'no',
+				'deduct_coupon_discount' => $source_rule['deduct_coupon_discount'] === 'yes' ? 'yes' : 'no',
+				'surface'                => 'classic',
+				'shipping_method_ids'    => [ '_all' ],
+				'order'                  => $order++,
+			]
+		);
+	}
+
+	update_option( 'hp_cs_shipping_discount_rules', $existing, false );
+	update_option( 'hp_cs_wc_shipping_discount_imported', 'yes', false );
+	hp_cs_bump_cache_versions();
+}
+
 /**
  * Get cache version integer.
  */
