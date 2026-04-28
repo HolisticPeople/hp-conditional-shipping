@@ -52,24 +52,28 @@ class HP_CS_Filters_Pro {
 	}
 
 	/**
-	 * Shipping country (from customer session).
+	 * Shipping country.
+	 *
+	 * Prefer the package destination during live rate calculation. Session-backed
+	 * customer data can be stale during checkout refreshes and incorrectly trip
+	 * country-based restrictions.
 	 */
-	public static function filter_shipping_country( $condition ) {
+	public static function filter_shipping_country( $condition, $package = [] ) {
 		$countries = isset( $condition['countries'] ) ? (array) $condition['countries'] : [];
 		if ( empty( $countries ) ) {
 			return false;
 		}
 
-		$value = WC()->customer ? WC()->customer->get_shipping_country() : null;
+		$value = self::get_shipping_destination_value( $package, 'country' );
 		return ! HP_CS_Filters::is_array_comparison( (string) $value, $countries, $condition['operator'] ?? 'is' );
 	}
 
 	/**
 	 * Shipping postcode (supports ranges & wildcards via wc_postcode_location_matcher).
 	 */
-	public static function filter_shipping_postcode( $condition ) {
-		$value   = WC()->customer ? WC()->customer->get_shipping_postcode() : null;
-		$country = WC()->customer ? WC()->customer->get_shipping_country() : null;
+	public static function filter_shipping_postcode( $condition, $package = [] ) {
+		$value   = self::get_shipping_destination_value( $package, 'postcode' );
+		$country = self::get_shipping_destination_value( $package, 'country' );
 
 		if ( $value === null ) {
 			return false;
@@ -107,8 +111,8 @@ class HP_CS_Filters_Pro {
 	/**
 	 * Shipping city (supports wildcard).
 	 */
-	public static function filter_shipping_city( $condition ) {
-		$value = WC()->customer ? WC()->customer->get_shipping_city() : null;
+	public static function filter_shipping_city( $condition, $package = [] ) {
+		$value = self::get_shipping_destination_value( $package, 'city' );
 		$value = $value !== null ? trim( strtolower( (string) $value ) ) : null;
 
 		$cities_raw = isset( $condition['cities'] ) ? trim( (string) $condition['cities'] ) : '';
@@ -140,6 +144,35 @@ class HP_CS_Filters_Pro {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Resolve the active shipping destination from the package first, then
+	 * fallback to the customer session when a package field is unavailable.
+	 */
+	private static function get_shipping_destination_value( $package, string $key ) {
+		$destination = isset( $package['destination'] ) && is_array( $package['destination'] ) ? $package['destination'] : [];
+		if ( array_key_exists( $key, $destination ) ) {
+			$value = $destination[ $key ];
+			if ( $value !== null && $value !== '' ) {
+				return $value;
+			}
+		}
+
+		if ( ! WC()->customer ) {
+			return null;
+		}
+
+		switch ( $key ) {
+			case 'country':
+				return WC()->customer->get_shipping_country();
+			case 'postcode':
+				return WC()->customer->get_shipping_postcode();
+			case 'city':
+				return WC()->customer->get_shipping_city();
+		}
+
+		return null;
 	}
 
 	/**
@@ -338,5 +371,4 @@ class HP_CS_Filters_Pro {
 		return array_keys( $tag_ids );
 	}
 }
-
 

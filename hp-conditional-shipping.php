@@ -3,7 +3,7 @@
 Plugin Name: HP Conditional Shipping
 Plugin URI:  https://holisticpeople.com
 Description: Drop-in replacement for Woo Conditional Shipping Pro. Filters shipping methods based on rulesets stored in the wcs_ruleset CPT.
-Version:     0.3.0
+Version:     0.4.0
 Author:      HolisticPeople
 Text Domain: hp-conditional-shipping
 Domain Path: /languages
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'HP_CS_VERSION' ) ) {
-	define( 'HP_CS_VERSION', '0.3.0' );
+	define( 'HP_CS_VERSION', '0.4.0' );
 }
 
 if ( ! defined( 'HP_CS_FILE' ) ) {
@@ -39,6 +39,16 @@ require_once HP_CS_PATH . 'includes/class-hp-cs-filters-pro.php';
 require_once HP_CS_PATH . 'includes/class-hp-cs-frontend.php';
 require_once HP_CS_PATH . 'includes/class-hp-cs-admin.php';
 
+register_activation_hook(
+	__FILE__,
+	function () {
+		if ( get_option( 'hp_cs_mode', null ) === null ) {
+			add_option( 'hp_cs_mode', 'audit', '', false );
+		}
+		hp_cs_maybe_import_wc_shipping_discount_rules();
+	}
+);
+
 add_action(
 	'before_woocommerce_init',
 	function () {
@@ -59,11 +69,10 @@ function hp_cs_init() {
 
 	HP_CS_Post_Type::instance();
 	HP_CS_Frontend::instance();
+	hp_cs_maybe_import_wc_shipping_discount_rules();
 
 	if ( is_admin() ) {
 		HP_CS_Admin::instance();
 	}
 }
 add_action( 'plugins_loaded', 'hp_cs_init', 10 );
-
-

@@ -21,6 +21,7 @@ class HP_CS_Frontend {
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ], 10 );
 
 		add_filter( 'woocommerce_package_rates', [ $this, 'filter_shipping_methods' ], 100, 2 );
+		add_filter( 'hp_funnels_shipping_rates_result', [ $this, 'filter_funnel_shipping_rates' ], 10, 4 );
 
 		// Store customer details into session so conditions relying on billing/shipping fields can work reliably.
 		add_action( 'woocommerce_checkout_update_order_review', [ $this, 'store_customer_details' ], 10, 1 );
@@ -80,14 +81,51 @@ class HP_CS_Frontend {
 	 * Filter shipping methods.
 	 */
 	public function filter_shipping_methods( $rates, $package ) {
-		$rulesets            = hp_cs_get_rulesets( true );
+		$result = $this->evaluate_rates( $rates, $package, 'classic' );
+		$rates  = $result['rates'];
+
+		// Persist passed rules so messaging works even when WC serves cached rates.
+		if ( WC()->session ) {
+			WC()->session->set( 'wcs_passed_rule_ids', $this->passed_rule_ids );
+		}
+
+		return $rates;
+	}
+
+	public function filter_funnel_shipping_rates( $result, $items, $address, $context ) {
+		if ( ! is_array( $result ) ) {
+			$result = [ 'rates' => [] ];
+		}
+
+		$rates   = isset( $result['rates'] ) && is_array( $result['rates'] ) ? $result['rates'] : [];
+		$package = $this->build_funnel_package( (array) $items, (array) $address, (array) $context );
+		$eval    = $this->evaluate_rates( $rates, $package, 'funnel' );
+
+		$result['rates']                = $eval['rates'];
+		$result['notices']              = array_values( array_unique( array_filter( array_merge( (array) ( $result['notices'] ?? [] ), $eval['notices'] ) ) ) );
+		$result['restriction_messages'] = $result['notices'];
+		$result['blocked']              = ! empty( $rates ) && empty( $eval['rates'] );
+		$result['mode']                 = hp_cs_get_mode();
+
+		return $result;
+	}
+
+	private function evaluate_rates( array $rates, array $package, string $surface ) {
+		$mode                  = hp_cs_get_mode();
 		$this->passed_rule_ids = [];
 		$this->notices         = [];
+
+		if ( $mode === 'disabled' ) {
+			return [
+				'rates'   => $rates,
+				'notices' => [],
+			];
+		}
 
 		$disable_keys = [];
 		$enable_keys  = [];
 
-		foreach ( $rulesets as $ruleset ) {
+		foreach ( hp_cs_get_rulesets( true ) as $ruleset ) {
 			$passes = $ruleset->validate( $package );
 			if ( $passes ) {
 				$this->passed_rule_ids[] = $ruleset->get_id();
@@ -96,24 +134,18 @@ class HP_CS_Frontend {
 			foreach ( $ruleset->get_actions() as $action ) {
 				$type = $action['type'] ?? '';
 
-				if ( $type === 'disable_shipping_methods' ) {
-					if ( $passes ) {
-						foreach ( $rates as $key => $rate ) {
-							$instance_id  = $this->get_rate_instance_id( $rate );
-							$method_title = is_callable( [ $rate, 'get_label' ] ) ? $rate->get_label() : false;
-							if ( hp_cs_method_selected( $method_title, $instance_id, $action ) ) {
-								$disable_keys[ $key ] = true;
-								unset( $enable_keys[ $key ] );
-							}
+				if ( $type === 'disable_shipping_methods' && $passes ) {
+					foreach ( $rates as $key => $rate ) {
+						if ( $this->rate_matches_action( $rate, $action, $surface ) ) {
+							$disable_keys[ $key ] = true;
+							unset( $enable_keys[ $key ] );
 						}
 					}
 				}
 
 				if ( $type === 'enable_shipping_methods' ) {
 					foreach ( $rates as $key => $rate ) {
-						$instance_id  = $this->get_rate_instance_id( $rate );
-						$method_title = is_callable( [ $rate, 'get_label' ] ) ? $rate->get_label() : false;
-						if ( hp_cs_method_selected( $method_title, $instance_id, $action ) ) {
+						if ( $this->rate_matches_action( $rate, $action, $surface ) ) {
 							if ( $passes ) {
 								$enable_keys[ $key ] = true;
 								unset( $disable_keys[ $key ] );
@@ -125,26 +157,213 @@ class HP_CS_Frontend {
 					}
 				}
 
-				if ( $type === 'shipping_notice' ) {
-					if ( $passes ) {
-						$this->notices[] = $this->render_notice( $action );
-					}
+				if ( $passes && $type === 'shipping_notice' ) {
+					$this->notices[] = $this->render_notice( $action );
+				}
+
+				if ( $passes && $type === 'custom_error_msg' && ! empty( $action['error_msg'] ) ) {
+					$this->notices[] = wp_kses_post( (string) $action['error_msg'] );
 				}
 			}
 		}
 
-		foreach ( $rates as $key => $rate ) {
-			if ( isset( $disable_keys[ $key ] ) && ! isset( $enable_keys[ $key ] ) ) {
-				unset( $rates[ $key ] );
+		$filtered_rates = $rates;
+		if ( $mode === 'enforce' ) {
+			foreach ( $filtered_rates as $key => $rate ) {
+				if ( isset( $disable_keys[ $key ] ) && ! isset( $enable_keys[ $key ] ) ) {
+					unset( $filtered_rates[ $key ] );
+				}
+			}
+			$filtered_rates = $this->apply_discount_rules( $filtered_rates, $package, $surface );
+		}
+
+		$this->log_evaluation( $surface, $mode, count( $rates ), count( $filtered_rates ), array_keys( $disable_keys ) );
+
+		return [
+			'rates'   => $filtered_rates,
+			'notices' => array_values( array_unique( array_filter( $this->notices ) ) ),
+		];
+	}
+
+	private function rate_matches_action( $rate, array $action, string $surface ) {
+		if ( $surface === 'funnel' ) {
+			$title       = is_array( $rate ) ? (string) ( $rate['serviceName'] ?? $rate['service_name'] ?? $rate['name'] ?? '' ) : '';
+			$instance_id = is_array( $rate ) ? (string) ( $rate['serviceCode'] ?? $rate['service_code'] ?? $rate['code'] ?? '' ) : false;
+			return hp_cs_method_selected( $title, $instance_id, $action );
+		}
+
+		$title = method_exists( $rate, 'get_label' ) ? (string) $rate->get_label() : '';
+		return hp_cs_method_selected( $title, $this->get_rate_instance_id( $rate ), $action );
+	}
+
+	private function build_funnel_package( array $items, array $address, array $context ) {
+		$contents                = [];
+		$global_discount_percent = max( 0, min( 100, (float) ( $context['global_discount_percent'] ?? 0 ) ) );
+
+		foreach ( $items as $item ) {
+			if ( ! is_array( $item ) ) {
+				continue;
+			}
+
+			$product = $this->resolve_funnel_product( $item );
+			if ( ! $product ) {
+				continue;
+			}
+
+			$quantity = max( 1, (int) ( $item['quantity'] ?? $item['qty'] ?? 1 ) );
+			$line_total = (float) wc_get_price_excluding_tax( $product, [ 'qty' => $quantity ] );
+			$item_discount_percent = max( 0, min( 100, (float) ( $item['item_discount_percent'] ?? $item['itemDiscountPercent'] ?? 0 ) ) );
+			if ( $item_discount_percent > 0 ) {
+				$line_total *= ( 100 - $item_discount_percent ) / 100;
+			}
+			if ( empty( $item['exclude_global_discount'] ) && empty( $item['excludeGlobalDiscount'] ) && $global_discount_percent > 0 ) {
+				$line_total *= ( 100 - $global_discount_percent ) / 100;
+			}
+
+			$contents[] = [
+				'data'         => $product,
+				'quantity'     => $quantity,
+				'product_id'   => $product->get_parent_id() ?: $product->get_id(),
+				'variation_id' => $product->is_type( 'variation' ) ? $product->get_id() : 0,
+				'line_total'   => max( 0, $line_total ),
+			];
+		}
+
+		return [
+			'contents'    => $contents,
+			'destination' => [
+				'country'  => (string) ( $address['country'] ?? '' ),
+				'state'    => (string) ( $address['state'] ?? '' ),
+				'postcode' => (string) ( $address['postcode'] ?? $address['zip'] ?? '' ),
+				'city'     => (string) ( $address['city'] ?? '' ),
+			],
+		];
+	}
+
+	private function resolve_funnel_product( array $item ) {
+		$product_id = absint( $item['variation_id'] ?? $item['variationId'] ?? $item['product_id'] ?? $item['productId'] ?? $item['id'] ?? 0 );
+		$product    = $product_id ? wc_get_product( $product_id ) : false;
+
+		if ( ! $product && ! empty( $item['sku'] ) ) {
+			$product_id = wc_get_product_id_by_sku( (string) $item['sku'] );
+			$product    = $product_id ? wc_get_product( $product_id ) : false;
+		}
+
+		return $product instanceof WC_Product ? $product : false;
+	}
+
+	private function apply_discount_rules( array $rates, array $package, string $surface ) {
+		foreach ( hp_cs_get_shipping_discount_rules() as $rule ) {
+			if ( ( $rule['enabled'] ?? 'no' ) !== 'yes' || ! $this->discount_rule_matches_surface( $rule, $surface ) ) {
+				continue;
+			}
+
+			$eligible_amount = $this->get_discount_rule_eligible_amount( $package, $rule );
+			$min_amount      = max( 0, (float) ( $rule['min_amount'] ?? 0 ) );
+			$percent         = max( 0, (float) ( $rule['percentage_discount'] ?? 0 ) );
+
+			if ( $percent <= 0 || $eligible_amount < $min_amount ) {
+				continue;
+			}
+
+			$discount = $eligible_amount * ( $percent / 100 );
+			foreach ( $rates as $key => $rate ) {
+				if ( $this->rate_matches_action( $rate, $rule, $surface ) ) {
+					$rates[ $key ] = $this->discount_rate( $rate, $discount, $surface );
+				}
 			}
 		}
 
-		// Persist passed rules so messaging works even when WC serves cached rates.
-		if ( WC()->session ) {
-			WC()->session->set( 'wcs_passed_rule_ids', $this->passed_rule_ids );
+		return $rates;
+	}
+
+	private function discount_rule_matches_surface( array $rule, string $surface ) {
+		$rule_surface = (string) ( $rule['surface'] ?? 'classic' );
+		return $rule_surface === 'both' || $rule_surface === $surface;
+	}
+
+	private function get_discount_rule_eligible_amount( array $package, array $rule ) {
+		$shipping_class_raw = (string) ( $rule['shipping_class'] ?? '' );
+		$shipping_class     = $shipping_class_raw === '_none' ? '_none' : sanitize_title( $shipping_class_raw );
+		$total              = 0.0;
+
+		foreach ( (array) ( $package['contents'] ?? [] ) as $item ) {
+			if ( ! is_array( $item ) || ! isset( $item['data'] ) || ! $item['data'] instanceof WC_Product ) {
+				continue;
+			}
+
+			$product = $item['data'];
+			$product_shipping_class = $product->get_shipping_class();
+			if ( $shipping_class === '_none' && $product_shipping_class !== '' ) {
+				continue;
+			}
+			if ( $shipping_class !== '' && $shipping_class !== '_none' && $product_shipping_class !== $shipping_class ) {
+				continue;
+			}
+
+			$quantity = max( 1, (int) ( $item['quantity'] ?? 1 ) );
+			$line     = isset( $item['line_total'] ) ? (float) $item['line_total'] : (float) wc_get_price_excluding_tax( $product, [ 'qty' => $quantity ] );
+			$total   += max( 0, $line );
 		}
 
-		return $rates;
+		return $total;
+	}
+
+	private function discount_rate( $rate, float $discount, string $surface ) {
+		if ( $discount <= 0 ) {
+			return $rate;
+		}
+
+		if ( $surface === 'funnel' && is_array( $rate ) ) {
+			return $this->discount_funnel_rate( $rate, $discount );
+		}
+
+		if ( is_object( $rate ) && method_exists( $rate, 'get_cost' ) && method_exists( $rate, 'set_cost' ) ) {
+			$cost     = (float) $rate->get_cost();
+			$new_cost = max( 0, $cost - $discount );
+			$rate->set_cost( $new_cost );
+
+			if ( method_exists( $rate, 'get_taxes' ) && method_exists( $rate, 'set_taxes' ) ) {
+				$taxes = (array) $rate->get_taxes();
+				if ( $cost > 0 && ! empty( $taxes ) ) {
+					$ratio = $new_cost / $cost;
+					foreach ( $taxes as $tax_id => $tax ) {
+						$taxes[ $tax_id ] = (float) $tax * $ratio;
+					}
+					$rate->set_taxes( $taxes );
+				}
+			}
+		}
+
+		return $rate;
+	}
+
+	private function discount_funnel_rate( array $rate, float $discount ) {
+		foreach ( [ 'shipmentCost', 'shipping_amount_raw', 'base_amount_raw', 'shipment_cost' ] as $field ) {
+			if ( isset( $rate[ $field ] ) && is_numeric( $rate[ $field ] ) ) {
+				$rate[ $field ] = max( 0, (float) $rate[ $field ] - $discount );
+				$rate['shipmentCost'] = $rate[ $field ];
+				return $rate;
+			}
+		}
+
+		return $rate;
+	}
+
+	private function log_evaluation( string $surface, string $mode, int $before_count, int $after_count, array $disabled_keys ) {
+		do_action(
+			'hp_monitor_event',
+			'conditional_shipping.evaluated',
+			[
+				'plugin'        => 'hp-conditional-shipping',
+				'surface'       => $surface,
+				'mode'          => $mode,
+				'rates_before'  => $before_count,
+				'rates_after'   => $after_count,
+				'disabled_keys' => array_values( array_map( 'strval', $disabled_keys ) ),
+				'notices_count' => count( $this->notices ),
+			]
+		);
 	}
 
 	public function get_rate_instance_id( $rate ) {
@@ -287,5 +506,4 @@ class HP_CS_Frontend {
 		return $passed_rules;
 	}
 }
-
 

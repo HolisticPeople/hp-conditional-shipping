@@ -141,6 +141,11 @@ class HP_CS_Admin {
 			return;
 		}
 
+		check_admin_referer( 'woocommerce-settings' );
+
+		$mode = isset( $_POST['hp_cs_mode'] ) ? sanitize_key( wp_unslash( $_POST['hp_cs_mode'] ) ) : 'audit';
+		update_option( 'hp_cs_mode', in_array( $mode, [ 'audit', 'enforce', 'disabled' ], true ) ? $mode : 'audit', false );
+
 		$ruleset_order = isset( $_POST['wcs_ruleset_order'] ) ? (array) wc_clean( wp_unslash( $_POST['wcs_ruleset_order'] ) ) : [];
 		$order = [];
 		$loop  = 0;
@@ -149,6 +154,7 @@ class HP_CS_Admin {
 			$loop++;
 		}
 		update_option( 'wcs_ruleset_order', $order );
+		update_option( 'hp_cs_shipping_discount_rules', $this->sanitize_discount_rules( $_POST['hp_cs_shipping_discount_rules'] ?? [] ), false );
 
 		hp_cs_bump_cache_versions();
 	}
@@ -304,6 +310,60 @@ class HP_CS_Admin {
 		return $value;
 	}
 
+	private function sanitize_discount_rules( $rules ) {
+		if ( ! is_array( $rules ) ) {
+			return [];
+		}
+
+		$sanitized = [];
+		$order     = 0;
+
+		foreach ( $rules as $rule ) {
+			if ( ! is_array( $rule ) ) {
+				continue;
+			}
+
+			$label          = sanitize_text_field( wp_unslash( (string) ( $rule['label'] ?? '' ) ) );
+			$shipping_class_raw = wp_unslash( (string) ( $rule['shipping_class'] ?? '' ) );
+			$shipping_class     = $shipping_class_raw === '_none' ? '_none' : sanitize_title( $shipping_class_raw );
+			$percent        = (float) wc_format_decimal( wp_unslash( (string) ( $rule['percentage_discount'] ?? 0 ) ) );
+			$min_amount     = (float) wc_format_decimal( wp_unslash( (string) ( $rule['min_amount'] ?? 0 ) ) );
+
+			if ( $label === '' && $shipping_class === '' && $percent <= 0 && $min_amount <= 0 ) {
+				continue;
+			}
+
+			$surface = sanitize_key( wp_unslash( (string) ( $rule['surface'] ?? 'classic' ) ) );
+			if ( ! in_array( $surface, [ 'classic', 'funnel', 'both' ], true ) ) {
+				$surface = 'classic';
+			}
+
+			$method_ids = isset( $rule['shipping_method_ids'] ) ? (array) wp_unslash( $rule['shipping_method_ids'] ) : [ '_all' ];
+			$method_ids = array_values( array_filter( array_map( 'sanitize_text_field', $method_ids ) ) );
+			if ( empty( $method_ids ) ) {
+				$method_ids = [ '_all' ];
+			}
+
+			$sanitized[] = hp_cs_normalize_discount_rule(
+				[
+					'enabled'                    => ! empty( $rule['enabled'] ) ? 'yes' : 'no',
+					'label'                      => $label,
+					'shipping_class'             => $shipping_class,
+					'min_amount'                 => max( 0, $min_amount ),
+					'percentage_discount'        => max( 0, $percent ),
+					'deduct_sale_discount'       => ! empty( $rule['deduct_sale_discount'] ) ? 'yes' : 'no',
+					'deduct_coupon_discount'     => ! empty( $rule['deduct_coupon_discount'] ) ? 'yes' : 'no',
+					'surface'                    => $surface,
+					'shipping_method_ids'        => $method_ids,
+					'shipping_method_name_match' => sanitize_textarea_field( wp_unslash( (string) ( $rule['shipping_method_name_match'] ?? '' ) ) ),
+					'order'                      => $order++,
+				]
+			);
+		}
+
+		return $sanitized;
+	}
+
 	public function hide_default_settings( $settings, $section ) {
 		if ( $section === 'woo_conditional_shipping' ) {
 			return [];
@@ -311,5 +371,3 @@ class HP_CS_Admin {
 		return $settings;
 	}
 }
-
-
