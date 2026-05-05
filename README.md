@@ -15,16 +15,6 @@ HolisticPeople WordPress plugin: drop-in replacement for Woo Conditional Shippin
   checkout rate filtering so country/postcode/city rules evaluate against the
   current address being quoted.
 
+## Runtime Requirements
 
-
-
-
-
-
-
-
-
-
-
-
-
+- PHP 8.5+
