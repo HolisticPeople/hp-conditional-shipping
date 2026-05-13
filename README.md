@@ -2,6 +2,10 @@
 
 HolisticPeople WordPress plugin: drop-in replacement for Woo Conditional Shipping Pro (ruleset parity + performance).
 
+## 2.0.0
+
+- Major production promotion for the PHP 8.5 baseline, staged conditional-shipping runtime hardening, and HP-owned checkout compatibility.
+
 ## 0.4.0
 
 - Add audit/enforce/disabled runtime mode for safe staging activation.
