@@ -2,6 +2,11 @@
 
 HolisticPeople WordPress plugin: drop-in replacement for Woo Conditional Shipping Pro (ruleset parity + performance).
 
+## 2.0.2
+
+- Restore shipping discounts as a percentage of eligible order total applied to shipping, capped at zero.
+- Show an explicit `$0.00` amount for paid carrier methods reduced to zero by discount rules.
+
 ## 2.0.1
 
 - Fix shipping discount rules so the percentage discount is applied to each shipping rate cost, not the cart product subtotal.

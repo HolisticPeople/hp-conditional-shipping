@@ -32,6 +32,7 @@ class HP_CS_Frontend {
 
 		add_action( 'woocommerce_review_order_before_shipping', [ $this, 'shipping_notice' ], 100 );
 		add_action( 'woocommerce_before_cart_totals', [ $this, 'shipping_notice' ], 100 );
+		add_filter( 'woocommerce_cart_shipping_method_full_label', [ $this, 'show_zero_cost_rate_amount' ], 100, 2 );
 
 		// Blocks/Store API: expose notices without relying on block assets.
 		add_action( 'woocommerce_blocks_loaded', [ $this, 'register_store_api_data' ], 10 );
@@ -266,9 +267,10 @@ class HP_CS_Frontend {
 				continue;
 			}
 
+			$discount = $eligible_amount * ( $percent / 100 );
 			foreach ( $rates as $key => $rate ) {
 				if ( $this->rate_matches_action( $rate, $rule, $surface ) ) {
-					$rates[ $key ] = $this->discount_rate( $rate, $percent, $surface );
+					$rates[ $key ] = $this->discount_rate( $rate, $discount, $surface );
 				}
 			}
 		}
@@ -308,19 +310,17 @@ class HP_CS_Frontend {
 		return $total;
 	}
 
-	private function discount_rate( $rate, float $discount_percent, string $surface ) {
-		$discount_percent = max( 0, min( 100, $discount_percent ) );
-		if ( $discount_percent <= 0 ) {
+	private function discount_rate( $rate, float $discount, string $surface ) {
+		if ( $discount <= 0 ) {
 			return $rate;
 		}
 
 		if ( $surface === 'funnel' && is_array( $rate ) ) {
-			return $this->discount_funnel_rate( $rate, $discount_percent );
+			return $this->discount_funnel_rate( $rate, $discount );
 		}
 
 		if ( is_object( $rate ) && method_exists( $rate, 'get_cost' ) && method_exists( $rate, 'set_cost' ) ) {
 			$cost     = (float) $rate->get_cost();
-			$discount = $cost * ( $discount_percent / 100 );
 			$new_cost = max( 0, $cost - $discount );
 			$rate->set_cost( $new_cost );
 
@@ -339,11 +339,10 @@ class HP_CS_Frontend {
 		return $rate;
 	}
 
-	private function discount_funnel_rate( array $rate, float $discount_percent ) {
+	private function discount_funnel_rate( array $rate, float $discount ) {
 		foreach ( [ 'shipmentCost', 'shipping_amount_raw', 'base_amount_raw', 'shipment_cost' ] as $field ) {
 			if ( isset( $rate[ $field ] ) && is_numeric( $rate[ $field ] ) ) {
 				$cost           = (float) $rate[ $field ];
-				$discount       = $cost * ( $discount_percent / 100 );
 				$rate[ $field ] = max( 0, $cost - $discount );
 				$rate['shipmentCost'] = $rate[ $field ];
 				return $rate;
@@ -351,6 +350,19 @@ class HP_CS_Frontend {
 		}
 
 		return $rate;
+	}
+
+	public function show_zero_cost_rate_amount( $label, $method ) {
+		if ( ! is_object( $method ) || ! method_exists( $method, 'get_cost' ) ) {
+			return $label;
+		}
+
+		$method_id = method_exists( $method, 'get_method_id' ) ? (string) $method->get_method_id() : '';
+		if ( $method_id === 'free_shipping' || (float) $method->get_cost() > 0 || strpos( (string) $label, 'woocommerce-Price-amount' ) !== false ) {
+			return $label;
+		}
+
+		return $label . ': ' . wc_price( 0 );
 	}
 
 	private function log_evaluation( string $surface, string $mode, int $before_count, int $after_count, array $disabled_keys ) {
