@@ -2,6 +2,10 @@
 
 HolisticPeople WordPress plugin: drop-in replacement for Woo Conditional Shipping Pro (ruleset parity + performance).
 
+## 2.0.1
+
+- Fix shipping discount rules so the percentage discount is applied to each shipping rate cost, not the cart product subtotal.
+
 ## 2.0.0
 
 - Major production promotion for the PHP 8.5 baseline, staged conditional-shipping runtime hardening, and HP-owned checkout compatibility.

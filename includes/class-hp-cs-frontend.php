@@ -266,10 +266,9 @@ class HP_CS_Frontend {
 				continue;
 			}
 
-			$discount = $eligible_amount * ( $percent / 100 );
 			foreach ( $rates as $key => $rate ) {
 				if ( $this->rate_matches_action( $rate, $rule, $surface ) ) {
-					$rates[ $key ] = $this->discount_rate( $rate, $discount, $surface );
+					$rates[ $key ] = $this->discount_rate( $rate, $percent, $surface );
 				}
 			}
 		}
@@ -309,17 +308,19 @@ class HP_CS_Frontend {
 		return $total;
 	}
 
-	private function discount_rate( $rate, float $discount, string $surface ) {
-		if ( $discount <= 0 ) {
+	private function discount_rate( $rate, float $discount_percent, string $surface ) {
+		$discount_percent = max( 0, min( 100, $discount_percent ) );
+		if ( $discount_percent <= 0 ) {
 			return $rate;
 		}
 
 		if ( $surface === 'funnel' && is_array( $rate ) ) {
-			return $this->discount_funnel_rate( $rate, $discount );
+			return $this->discount_funnel_rate( $rate, $discount_percent );
 		}
 
 		if ( is_object( $rate ) && method_exists( $rate, 'get_cost' ) && method_exists( $rate, 'set_cost' ) ) {
 			$cost     = (float) $rate->get_cost();
+			$discount = $cost * ( $discount_percent / 100 );
 			$new_cost = max( 0, $cost - $discount );
 			$rate->set_cost( $new_cost );
 
@@ -338,10 +339,12 @@ class HP_CS_Frontend {
 		return $rate;
 	}
 
-	private function discount_funnel_rate( array $rate, float $discount ) {
+	private function discount_funnel_rate( array $rate, float $discount_percent ) {
 		foreach ( [ 'shipmentCost', 'shipping_amount_raw', 'base_amount_raw', 'shipment_cost' ] as $field ) {
 			if ( isset( $rate[ $field ] ) && is_numeric( $rate[ $field ] ) ) {
-				$rate[ $field ] = max( 0, (float) $rate[ $field ] - $discount );
+				$cost           = (float) $rate[ $field ];
+				$discount       = $cost * ( $discount_percent / 100 );
+				$rate[ $field ] = max( 0, $cost - $discount );
 				$rate['shipmentCost'] = $rate[ $field ];
 				return $rate;
 			}
