@@ -44,6 +44,8 @@ class HP_CS_Admin {
 			return;
 		}
 
+		do_action( 'hp_zen_enqueue_admin_surface', 'hp-conditional-shipping' );
+
 		// jQuery UI dependencies for visual editor.
 		wp_enqueue_script( 'jquery-ui-sortable' );
 		wp_enqueue_script( 'jquery-ui-datepicker' );

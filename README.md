@@ -2,6 +2,10 @@
 
 HolisticPeople WordPress plugin: drop-in replacement for Woo Conditional Shipping Pro (ruleset parity + performance).
 
+## 2.0.3
+
+- Opts the conditional shipping rules settings screen into the shared HP-Zen admin runtime.
+
 ## 2.0.2
 
 - Restore shipping discounts as a percentage of eligible order total applied to shipping, capped at zero.
