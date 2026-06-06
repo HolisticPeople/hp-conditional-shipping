@@ -4,6 +4,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+if ( ! defined( 'HP_CS_RULESET_JSON_REQUEST_MAX_LENGTH' ) ) {
+	define( 'HP_CS_RULESET_JSON_REQUEST_MAX_LENGTH', 65536 );
+}
+
 class HP_CS_Admin {
 	private static $instance = null;
 
@@ -212,8 +216,7 @@ class HP_CS_Admin {
 
 		// v0.1 parity editor: accept JSON blobs (preferred) OR legacy array post structure.
 		if ( isset( $_POST['wcs_conditions_json'] ) && is_string( $_POST['wcs_conditions_json'] ) ) {
-			$decoded = json_decode( wp_unslash( $_POST['wcs_conditions_json'] ), true );
-			$conditions = is_array( $decoded ) ? $decoded : [];
+			$conditions = $this->decode_ruleset_json_array( $_POST['wcs_conditions_json'] );
 		} else {
 			$conditions = isset( $_POST['wcs_conditions'] ) ? (array) $_POST['wcs_conditions'] : [];
 		}
@@ -221,8 +224,7 @@ class HP_CS_Admin {
 		update_post_meta( $post->ID, '_wcs_conditions', $conditions );
 
 		if ( isset( $_POST['wcs_actions_json'] ) && is_string( $_POST['wcs_actions_json'] ) ) {
-			$decoded = json_decode( wp_unslash( $_POST['wcs_actions_json'] ), true );
-			$actions = is_array( $decoded ) ? $decoded : [];
+			$actions = $this->decode_ruleset_json_array( $_POST['wcs_actions_json'] );
 		} else {
 			$actions = isset( $_POST['wcs_actions'] ) ? (array) $_POST['wcs_actions'] : [];
 		}
@@ -311,6 +313,16 @@ class HP_CS_Admin {
 		}
 
 		return (int) $value;
+	}
+
+	private function decode_ruleset_json_array( $value ): array {
+		$value = wp_unslash( $value );
+		if ( ! is_string( $value ) || strlen( $value ) > HP_CS_RULESET_JSON_REQUEST_MAX_LENGTH ) {
+			return [];
+		}
+
+		$decoded = json_decode( $value, true );
+		return is_array( $decoded ) ? $decoded : [];
 	}
 
 	private function sanitize_deep( $value ) {
