@@ -94,15 +94,13 @@ class HP_CS_Admin {
 
 		$hide_save_button = true;
 
-		$action    = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : false;
-		$ruleset_id = isset( $_GET['ruleset_id'] ) ? wp_unslash( $_GET['ruleset_id'] ) : false;
+		$action         = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : false;
+		$ruleset_id_raw = isset( $_GET['ruleset_id'] ) ? wp_unslash( $_GET['ruleset_id'] ) : false;
+		$is_new_ruleset = $ruleset_id_raw === 'new';
+		$ruleset_id     = false;
 
-		if ( $ruleset_id ) {
-			if ( $ruleset_id === 'new' ) {
-				$ruleset_id = false;
-			} else {
-				$ruleset_id = absint( $ruleset_id );
-			}
+		if ( $ruleset_id_raw ) {
+			$ruleset_id = $is_new_ruleset ? false : $this->parse_positive_decimal_id( $ruleset_id_raw );
 
 			// Delete ruleset.
 			if ( $ruleset_id && $action === 'delete' && get_post_type( $ruleset_id ) === 'wcs_ruleset' ) {
@@ -121,9 +119,11 @@ class HP_CS_Admin {
 				exit;
 			}
 
-			$ruleset = new HP_CS_Ruleset( $ruleset_id );
-			include HP_CS_PATH . 'includes/admin/views/ruleset.php';
-			return;
+			if ( $is_new_ruleset || $ruleset_id ) {
+				$ruleset = new HP_CS_Ruleset( $ruleset_id );
+				include HP_CS_PATH . 'includes/admin/views/ruleset.php';
+				return;
+			}
 		}
 
 		$rulesets        = hp_cs_get_rulesets( false );
@@ -174,11 +174,18 @@ class HP_CS_Admin {
 
 		check_admin_referer( 'woocommerce-settings' );
 
-		$ruleset_id = sanitize_text_field( wp_unslash( $_POST['ruleset_id'] ) );
-		$post = null;
+		$ruleset_id_raw = sanitize_text_field( wp_unslash( $_POST['ruleset_id'] ) );
+		$ruleset_id     = 0;
+		$post           = null;
 
-		if ( $ruleset_id && $ruleset_id !== '0' ) {
-			$post = get_post( absint( $ruleset_id ) );
+		if ( $ruleset_id_raw && $ruleset_id_raw !== '0' ) {
+			$ruleset_id = $this->parse_positive_decimal_id( $ruleset_id_raw );
+			if ( ! $ruleset_id ) {
+				wp_safe_redirect( admin_url( 'admin.php?page=wc-settings&tab=shipping&section=woo_conditional_shipping' ) );
+				exit;
+			}
+
+			$post = get_post( $ruleset_id );
 			if ( ! $post || get_post_type( $post ) !== 'wcs_ruleset' ) {
 				$post = null;
 			}
@@ -244,7 +251,7 @@ class HP_CS_Admin {
 			wp_send_json_error( [ 'message' => 'Permission denied' ], 403 );
 		}
 
-		$ruleset_id = isset( $_POST['id'] ) ? absint( $_POST['id'] ) : 0;
+		$ruleset_id = isset( $_POST['id'] ) ? $this->parse_positive_decimal_id( wp_unslash( $_POST['id'] ) ) : 0;
 		$post       = $ruleset_id ? get_post( $ruleset_id ) : null;
 
 		if ( ! $post || get_post_type( $post ) !== 'wcs_ruleset' ) {
@@ -286,6 +293,24 @@ class HP_CS_Admin {
 		hp_cs_bump_cache_versions();
 
 		return $post_id;
+	}
+
+	private function parse_positive_decimal_id( $value ): int {
+		if ( ! is_scalar( $value ) ) {
+			return 0;
+		}
+
+		$value = trim( (string) $value );
+		if ( ! preg_match( '/^[1-9][0-9]*$/', $value ) ) {
+			return 0;
+		}
+
+		$max_int = (string) PHP_INT_MAX;
+		if ( strlen( $value ) > strlen( $max_int ) || ( strlen( $value ) === strlen( $max_int ) && strcmp( $value, $max_int ) > 0 ) ) {
+			return 0;
+		}
+
+		return (int) $value;
 	}
 
 	private function sanitize_deep( $value ) {
