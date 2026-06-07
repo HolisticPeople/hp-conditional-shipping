@@ -239,7 +239,7 @@ class HP_CS_Frontend {
 			}
 
 			$quantity = max( 1, $this->parse_positive_decimal_id( $item['quantity'] ?? $item['qty'] ?? 1 ) );
-			$line_total = (float) wc_get_price_excluding_tax( $product, [ 'qty' => $quantity ] );
+			$line_total = $this->item_line_total( $item, $product, $quantity );
 			$item_discount_percent = $this->parse_request_percent( $item['item_discount_percent'] ?? $item['itemDiscountPercent'] ?? 0 );
 			if ( $item_discount_percent > 0 ) {
 				$line_total *= ( 100 - $item_discount_percent ) / 100;
@@ -279,6 +279,18 @@ class HP_CS_Frontend {
 		}
 
 		return $product instanceof WC_Product ? $product : false;
+	}
+
+	private function item_line_total( array $item, WC_Product $product, int $quantity ): float {
+		if ( isset( $item['line_total'] ) && is_numeric( $item['line_total'] ) ) {
+			return max( 0, (float) $item['line_total'] );
+		}
+
+		if ( isset( $item['unit_price'] ) && is_numeric( $item['unit_price'] ) ) {
+			return max( 0, (float) $item['unit_price'] ) * max( 1, $quantity );
+		}
+
+		return (float) wc_get_price_excluding_tax( $product, [ 'qty' => $quantity ] );
 	}
 
 	private function apply_discount_rules( array $rates, array $package, string $surface ) {
@@ -371,7 +383,7 @@ class HP_CS_Frontend {
 	}
 
 	private function discount_funnel_rate( array $rate, float $discount ) {
-		foreach ( [ 'shipmentCost', 'shipping_amount_raw', 'base_amount_raw', 'shipment_cost' ] as $field ) {
+		foreach ( [ 'shipmentCost', 'shipping_amount_raw', 'base_amount_raw', 'shipment_cost', 'amount', 'cost', 'rate' ] as $field ) {
 			if ( isset( $rate[ $field ] ) && is_numeric( $rate[ $field ] ) ) {
 				$cost           = (float) $rate[ $field ];
 				$rate[ $field ] = max( 0, $cost - $discount );

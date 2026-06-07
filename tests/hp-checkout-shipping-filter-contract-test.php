@@ -12,6 +12,8 @@ foreach ([
     "evaluate_rates( \$rates, \$package, 'hp_checkout' )" => 'HP Checkout shipping rates must be evaluated with an HP Checkout surface.',
     "in_array( \$surface, [ 'funnel', 'hp_checkout' ], true )" => 'Array rate matching must support HP Checkout rate arrays.',
     "discount_funnel_rate( \$rate, \$discount )" => 'HP Checkout array rates must use the array-rate discount path.',
+    "'amount', 'cost', 'rate'" => 'HP Checkout array-rate discounts must support common raw amount fields.',
+    "\$item['line_total']" => 'HP Checkout shipping discount packages must preserve HP-owned item line totals when provided.',
 ] as $needle => $message) {
     if (!str_contains($frontend, $needle)) {
         fwrite(STDERR, $message . "\n");
