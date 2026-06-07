@@ -382,7 +382,7 @@ class HP_CS_Admin {
 
 			$surface_raw = $this->sanitize_request_text( $rule['surface'] ?? 'classic' );
 			$surface     = sanitize_key( $surface_raw );
-			if ( $surface !== $surface_raw || ! in_array( $surface, [ 'classic', 'funnel', 'both' ], true ) ) {
+			if ( $surface !== $surface_raw || ! in_array( $surface, [ 'classic', 'funnel', 'hp_checkout', 'both' ], true ) ) {
 				$surface = 'classic';
 			}
 

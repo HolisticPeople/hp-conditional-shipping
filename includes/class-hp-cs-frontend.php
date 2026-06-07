@@ -30,6 +30,7 @@ class HP_CS_Frontend {
 
 		add_filter( 'woocommerce_package_rates', [ $this, 'filter_shipping_methods' ], 100, 2 );
 		add_filter( 'hp_funnels_shipping_rates_result', [ $this, 'filter_funnel_shipping_rates' ], 10, 4 );
+		add_filter( 'hp_checkout_shipping_rates_result', [ $this, 'filter_hp_checkout_shipping_rates' ], 10, 4 );
 
 		// Store customer details into session so conditions relying on billing/shipping fields can work reliably.
 		add_action( 'woocommerce_checkout_update_order_review', [ $this, 'store_customer_details' ], 10, 1 );
@@ -119,6 +120,24 @@ class HP_CS_Frontend {
 		return $result;
 	}
 
+	public function filter_hp_checkout_shipping_rates( $result, $items, $address, $context ) {
+		if ( ! is_array( $result ) ) {
+			$result = [ 'rates' => [] ];
+		}
+
+		$rates   = isset( $result['rates'] ) && is_array( $result['rates'] ) ? $result['rates'] : [];
+		$package = $this->build_funnel_package( (array) $items, (array) $address, (array) $context );
+		$eval    = $this->evaluate_rates( $rates, $package, 'hp_checkout' );
+
+		$result['rates']                = $eval['rates'];
+		$result['notices']              = array_values( array_unique( array_filter( array_merge( (array) ( $result['notices'] ?? [] ), $eval['notices'] ) ) ) );
+		$result['restriction_messages'] = $result['notices'];
+		$result['blocked']              = ! empty( $rates ) && empty( $eval['rates'] );
+		$result['mode']                 = hp_cs_get_mode();
+
+		return $result;
+	}
+
 	private function evaluate_rates( array $rates, array $package, string $surface ) {
 		$mode                  = hp_cs_get_mode();
 		$this->passed_rule_ids = [];
@@ -195,7 +214,7 @@ class HP_CS_Frontend {
 	}
 
 	private function rate_matches_action( $rate, array $action, string $surface ) {
-		if ( $surface === 'funnel' ) {
+		if ( in_array( $surface, [ 'funnel', 'hp_checkout' ], true ) ) {
 			$title       = is_array( $rate ) ? (string) ( $rate['serviceName'] ?? $rate['service_name'] ?? $rate['name'] ?? '' ) : '';
 			$instance_id = is_array( $rate ) ? (string) ( $rate['serviceCode'] ?? $rate['service_code'] ?? $rate['code'] ?? '' ) : false;
 			return hp_cs_method_selected( $title, $instance_id, $action );
@@ -289,6 +308,9 @@ class HP_CS_Frontend {
 
 	private function discount_rule_matches_surface( array $rule, string $surface ) {
 		$rule_surface = (string) ( $rule['surface'] ?? 'classic' );
+		if ( $surface === 'hp_checkout' && in_array( $rule_surface, [ 'classic', 'funnel' ], true ) ) {
+			return true;
+		}
 		return $rule_surface === 'both' || $rule_surface === $surface;
 	}
 
@@ -324,7 +346,7 @@ class HP_CS_Frontend {
 			return $rate;
 		}
 
-		if ( $surface === 'funnel' && is_array( $rate ) ) {
+		if ( in_array( $surface, [ 'funnel', 'hp_checkout' ], true ) && is_array( $rate ) ) {
 			return $this->discount_funnel_rate( $rate, $discount );
 		}
 

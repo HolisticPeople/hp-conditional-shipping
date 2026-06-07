@@ -95,6 +95,7 @@ $discount_rows[] = hp_cs_normalize_discount_rule( [ 'label' => '', 'order' => co
 									<select name="hp_cs_shipping_discount_rules[<?php echo esc_attr( $index ); ?>][surface]">
 										<option value="classic" <?php selected( $rule['surface'] ?? 'classic', 'classic' ); ?>><?php esc_html_e( 'Classic checkout', 'hp-conditional-shipping' ); ?></option>
 										<option value="funnel" <?php selected( $rule['surface'] ?? 'classic', 'funnel' ); ?>><?php esc_html_e( 'Funnel checkout', 'hp-conditional-shipping' ); ?></option>
+										<option value="hp_checkout" <?php selected( $rule['surface'] ?? 'classic', 'hp_checkout' ); ?>><?php esc_html_e( 'HP Checkout', 'hp-conditional-shipping' ); ?></option>
 										<option value="both" <?php selected( $rule['surface'] ?? 'classic', 'both' ); ?>><?php esc_html_e( 'Both', 'hp-conditional-shipping' ); ?></option>
 									</select>
 								</td>

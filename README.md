@@ -2,6 +2,11 @@
 
 HolisticPeople WordPress plugin: drop-in replacement for Woo Conditional Shipping Pro (ruleset parity + performance).
 
+## 2.0.7
+
+- Adds HP Checkout shipping-rate filter support so conditional restrictions, notices, and shipping discounts apply to the parallel HP Checkout rate flow.
+- Adds an HP Checkout surface option for shipping discount rules while preserving existing classic/funnel/both rule behavior during checkout consolidation.
+
 ## 2.0.3
 
 - Opts the conditional shipping rules settings screen into the shared HP-Zen admin runtime.
