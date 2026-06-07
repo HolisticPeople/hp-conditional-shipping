@@ -4,6 +4,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+if ( ! defined( 'HP_CS_FRONTEND_TEXT_REQUEST_MAX_LENGTH' ) ) {
+	define( 'HP_CS_FRONTEND_TEXT_REQUEST_MAX_LENGTH', 200 );
+}
+
+if ( ! defined( 'HP_CS_CHECKOUT_POST_DATA_MAX_LENGTH' ) ) {
+	define( 'HP_CS_CHECKOUT_POST_DATA_MAX_LENGTH', 8192 );
+}
+
 class HP_CS_Frontend {
 	private static $instance = null;
 
@@ -199,7 +207,7 @@ class HP_CS_Frontend {
 
 	private function build_funnel_package( array $items, array $address, array $context ) {
 		$contents                = [];
-		$global_discount_percent = max( 0, min( 100, (float) ( $context['global_discount_percent'] ?? 0 ) ) );
+		$global_discount_percent = $this->parse_request_percent( $context['global_discount_percent'] ?? 0 );
 
 		foreach ( $items as $item ) {
 			if ( ! is_array( $item ) ) {
@@ -211,9 +219,9 @@ class HP_CS_Frontend {
 				continue;
 			}
 
-			$quantity = max( 1, (int) ( $item['quantity'] ?? $item['qty'] ?? 1 ) );
+			$quantity = max( 1, $this->parse_positive_decimal_id( $item['quantity'] ?? $item['qty'] ?? 1 ) );
 			$line_total = (float) wc_get_price_excluding_tax( $product, [ 'qty' => $quantity ] );
-			$item_discount_percent = max( 0, min( 100, (float) ( $item['item_discount_percent'] ?? $item['itemDiscountPercent'] ?? 0 ) ) );
+			$item_discount_percent = $this->parse_request_percent( $item['item_discount_percent'] ?? $item['itemDiscountPercent'] ?? 0 );
 			if ( $item_discount_percent > 0 ) {
 				$line_total *= ( 100 - $item_discount_percent ) / 100;
 			}
@@ -233,20 +241,21 @@ class HP_CS_Frontend {
 		return [
 			'contents'    => $contents,
 			'destination' => [
-				'country'  => (string) ( $address['country'] ?? '' ),
-				'state'    => (string) ( $address['state'] ?? '' ),
-				'postcode' => (string) ( $address['postcode'] ?? $address['zip'] ?? '' ),
-				'city'     => (string) ( $address['city'] ?? '' ),
+				'country'  => $this->sanitize_request_text( $address['country'] ?? '' ),
+				'state'    => $this->sanitize_request_text( $address['state'] ?? '' ),
+				'postcode' => $this->sanitize_request_text( $address['postcode'] ?? $address['zip'] ?? '' ),
+				'city'     => $this->sanitize_request_text( $address['city'] ?? '' ),
 			],
 		];
 	}
 
 	private function resolve_funnel_product( array $item ) {
-		$product_id = absint( $item['variation_id'] ?? $item['variationId'] ?? $item['product_id'] ?? $item['productId'] ?? $item['id'] ?? 0 );
+		$product_id = $this->parse_positive_decimal_id( $item['variation_id'] ?? $item['variationId'] ?? $item['product_id'] ?? $item['productId'] ?? $item['id'] ?? 0 );
 		$product    = $product_id ? wc_get_product( $product_id ) : false;
 
-		if ( ! $product && ! empty( $item['sku'] ) ) {
-			$product_id = wc_get_product_id_by_sku( (string) $item['sku'] );
+		$sku = $this->sanitize_request_text( $item['sku'] ?? '' );
+		if ( ! $product && $sku !== '' ) {
+			$product_id = wc_get_product_id_by_sku( $sku );
 			$product    = $product_id ? wc_get_product( $product_id ) : false;
 		}
 
@@ -405,6 +414,10 @@ class HP_CS_Frontend {
 		}
 
 		$data = [];
+		if ( ! is_scalar( $post_data ) || strlen( (string) $post_data ) > HP_CS_CHECKOUT_POST_DATA_MAX_LENGTH ) {
+			return;
+		}
+
 		parse_str( (string) $post_data, $data );
 
 		$attrs = [
@@ -427,7 +440,7 @@ class HP_CS_Frontend {
 		foreach ( $attrs as $attr ) {
 			WC()->customer->set_props(
 				[
-					$attr => isset( $data[ $attr ] ) ? wp_unslash( $data[ $attr ] ) : null,
+					$attr => $this->get_checkout_field_value( $data, $attr ),
 				]
 			);
 
@@ -435,11 +448,63 @@ class HP_CS_Frontend {
 				$attr2 = str_replace( 'billing', 'shipping', $attr );
 				WC()->customer->set_props(
 					[
-						$attr2 => isset( $data[ $attr ] ) ? wp_unslash( $data[ $attr ] ) : null,
+						$attr2 => $this->get_checkout_field_value( $data, $attr ),
 					]
 				);
 			}
 		}
+	}
+
+	private function get_checkout_field_value( array $data, string $attr ) {
+		if ( ! array_key_exists( $attr, $data ) ) {
+			return null;
+		}
+
+		return $this->sanitize_request_text( $data[ $attr ] );
+	}
+
+	private function parse_positive_decimal_id( $value ): int {
+		if ( ! is_scalar( $value ) ) {
+			return 0;
+		}
+
+		$value = trim( (string) $value );
+		if ( ! preg_match( '/^[1-9][0-9]*$/', $value ) ) {
+			return 0;
+		}
+
+		$max_int = (string) PHP_INT_MAX;
+		if ( strlen( $value ) > strlen( $max_int ) || ( strlen( $value ) === strlen( $max_int ) && strcmp( $value, $max_int ) > 0 ) ) {
+			return 0;
+		}
+
+		return (int) $value;
+	}
+
+	private function parse_request_percent( $value ): float {
+		if ( ! is_scalar( $value ) ) {
+			return 0.0;
+		}
+
+		$value = trim( (string) wp_unslash( $value ) );
+		if ( $value === '' || strlen( $value ) > 32 || ! preg_match( '/^(?:0|[1-9][0-9]*)(?:\.[0-9]{1,4})?$/', $value ) ) {
+			return 0.0;
+		}
+
+		return min( 100, max( 0, (float) $value ) );
+	}
+
+	private function sanitize_request_text( $value, int $max_length = HP_CS_FRONTEND_TEXT_REQUEST_MAX_LENGTH ): string {
+		if ( ! is_scalar( $value ) ) {
+			return '';
+		}
+
+		$value = trim( (string) wp_unslash( $value ) );
+		if ( strlen( $value ) > $max_length ) {
+			return '';
+		}
+
+		return wc_clean( $value );
 	}
 
 	/**
@@ -521,4 +586,3 @@ class HP_CS_Frontend {
 		return $passed_rules;
 	}
 }
-
