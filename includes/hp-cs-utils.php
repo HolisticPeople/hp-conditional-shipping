@@ -63,6 +63,7 @@ function hp_cs_get_shipping_discount_rules() {
 
 function hp_cs_maybe_import_wc_shipping_discount_rules() {
 	if ( get_option( 'hp_cs_wc_shipping_discount_imported', '' ) === 'yes' ) {
+		hp_cs_sync_imported_wc_shipping_discount_rules();
 		return;
 	}
 
@@ -109,6 +110,57 @@ function hp_cs_maybe_import_wc_shipping_discount_rules() {
 	update_option( 'hp_cs_shipping_discount_rules', $existing, false );
 	update_option( 'hp_cs_wc_shipping_discount_imported', 'yes', false );
 	hp_cs_bump_cache_versions();
+}
+
+function hp_cs_sync_imported_wc_shipping_discount_rules() {
+	$settings = get_option( 'woocommerce_wc-shipping-discount_settings', [] );
+	if ( ! is_array( $settings ) || empty( $settings['rules'] ) || ! is_array( $settings['rules'] ) ) {
+		return;
+	}
+
+	$rules = hp_cs_get_shipping_discount_rules();
+	if ( empty( $rules ) ) {
+		return;
+	}
+
+	$legacy_enabled = ( $settings['enabled'] ?? 'yes' ) === 'yes';
+	$changed        = false;
+
+	foreach ( $rules as $index => $rule ) {
+		$shipping_class = (string) ( $rule['shipping_class'] ?? '' );
+		$label          = (string) ( $rule['label'] ?? '' );
+		if ( $shipping_class === '' || ! str_starts_with( $label, 'Imported: ' ) ) {
+			continue;
+		}
+
+		$legacy_rule = $settings['rules'][ $shipping_class ] ?? null;
+		if ( ! is_array( $legacy_rule ) ) {
+			continue;
+		}
+
+		$next = hp_cs_normalize_discount_rule(
+			array_merge(
+				$rule,
+				[
+					'enabled'             => $legacy_enabled && ( $legacy_rule['enabled'] ?? 'no' ) === 'yes' ? 'yes' : 'no',
+					'min_amount'          => (float) ( $legacy_rule['min_amount'] ?? 0 ),
+					'percentage_discount' => (float) ( $legacy_rule['percentage_discount'] ?? 0 ),
+					'deduct_sale_discount' => ( $legacy_rule['deduct_sale_discount'] ?? 'no' ) === 'yes' ? 'yes' : 'no',
+					'deduct_coupon_discount' => ( $legacy_rule['deduct_coupon_discount'] ?? 'no' ) === 'yes' ? 'yes' : 'no',
+				]
+			)
+		);
+
+		if ( $next !== $rule ) {
+			$rules[ $index ] = $next;
+			$changed         = true;
+		}
+	}
+
+	if ( $changed ) {
+		update_option( 'hp_cs_shipping_discount_rules', array_values( $rules ), false );
+		hp_cs_bump_cache_versions();
+	}
 }
 
 /**
