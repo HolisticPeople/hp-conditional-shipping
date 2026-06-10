@@ -4,6 +4,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+if ( ! defined( 'HP_CS_FRONTEND_TEXT_REQUEST_MAX_LENGTH' ) ) {
+	define( 'HP_CS_FRONTEND_TEXT_REQUEST_MAX_LENGTH', 200 );
+}
+
+if ( ! defined( 'HP_CS_CHECKOUT_POST_DATA_MAX_LENGTH' ) ) {
+	define( 'HP_CS_CHECKOUT_POST_DATA_MAX_LENGTH', 8192 );
+}
+
 class HP_CS_Frontend {
 	private static $instance = null;
 
@@ -22,6 +30,7 @@ class HP_CS_Frontend {
 
 		add_filter( 'woocommerce_package_rates', [ $this, 'filter_shipping_methods' ], 100, 2 );
 		add_filter( 'hp_funnels_shipping_rates_result', [ $this, 'filter_funnel_shipping_rates' ], 10, 4 );
+		add_filter( 'hp_checkout_shipping_rates_result', [ $this, 'filter_hp_checkout_shipping_rates' ], 10, 4 );
 
 		// Store customer details into session so conditions relying on billing/shipping fields can work reliably.
 		add_action( 'woocommerce_checkout_update_order_review', [ $this, 'store_customer_details' ], 10, 1 );
@@ -32,6 +41,7 @@ class HP_CS_Frontend {
 
 		add_action( 'woocommerce_review_order_before_shipping', [ $this, 'shipping_notice' ], 100 );
 		add_action( 'woocommerce_before_cart_totals', [ $this, 'shipping_notice' ], 100 );
+		add_filter( 'woocommerce_cart_shipping_method_full_label', [ $this, 'show_zero_cost_rate_amount' ], 100, 2 );
 
 		// Blocks/Store API: expose notices without relying on block assets.
 		add_action( 'woocommerce_blocks_loaded', [ $this, 'register_store_api_data' ], 10 );
@@ -100,6 +110,24 @@ class HP_CS_Frontend {
 		$rates   = isset( $result['rates'] ) && is_array( $result['rates'] ) ? $result['rates'] : [];
 		$package = $this->build_funnel_package( (array) $items, (array) $address, (array) $context );
 		$eval    = $this->evaluate_rates( $rates, $package, 'funnel' );
+
+		$result['rates']                = $eval['rates'];
+		$result['notices']              = array_values( array_unique( array_filter( array_merge( (array) ( $result['notices'] ?? [] ), $eval['notices'] ) ) ) );
+		$result['restriction_messages'] = $result['notices'];
+		$result['blocked']              = ! empty( $rates ) && empty( $eval['rates'] );
+		$result['mode']                 = hp_cs_get_mode();
+
+		return $result;
+	}
+
+	public function filter_hp_checkout_shipping_rates( $result, $items, $address, $context ) {
+		if ( ! is_array( $result ) ) {
+			$result = [ 'rates' => [] ];
+		}
+
+		$rates   = isset( $result['rates'] ) && is_array( $result['rates'] ) ? $result['rates'] : [];
+		$package = $this->build_funnel_package( (array) $items, (array) $address, (array) $context );
+		$eval    = $this->evaluate_rates( $rates, $package, 'hp_checkout' );
 
 		$result['rates']                = $eval['rates'];
 		$result['notices']              = array_values( array_unique( array_filter( array_merge( (array) ( $result['notices'] ?? [] ), $eval['notices'] ) ) ) );
@@ -186,7 +214,7 @@ class HP_CS_Frontend {
 	}
 
 	private function rate_matches_action( $rate, array $action, string $surface ) {
-		if ( $surface === 'funnel' ) {
+		if ( in_array( $surface, [ 'funnel', 'hp_checkout' ], true ) ) {
 			$title       = is_array( $rate ) ? (string) ( $rate['serviceName'] ?? $rate['service_name'] ?? $rate['name'] ?? '' ) : '';
 			$instance_id = is_array( $rate ) ? (string) ( $rate['serviceCode'] ?? $rate['service_code'] ?? $rate['code'] ?? '' ) : false;
 			return hp_cs_method_selected( $title, $instance_id, $action );
@@ -198,7 +226,7 @@ class HP_CS_Frontend {
 
 	private function build_funnel_package( array $items, array $address, array $context ) {
 		$contents                = [];
-		$global_discount_percent = max( 0, min( 100, (float) ( $context['global_discount_percent'] ?? 0 ) ) );
+		$global_discount_percent = $this->parse_request_percent( $context['global_discount_percent'] ?? 0 );
 
 		foreach ( $items as $item ) {
 			if ( ! is_array( $item ) ) {
@@ -210,9 +238,9 @@ class HP_CS_Frontend {
 				continue;
 			}
 
-			$quantity = max( 1, (int) ( $item['quantity'] ?? $item['qty'] ?? 1 ) );
-			$line_total = (float) wc_get_price_excluding_tax( $product, [ 'qty' => $quantity ] );
-			$item_discount_percent = max( 0, min( 100, (float) ( $item['item_discount_percent'] ?? $item['itemDiscountPercent'] ?? 0 ) ) );
+			$quantity = max( 1, $this->parse_positive_decimal_id( $item['quantity'] ?? $item['qty'] ?? 1 ) );
+			$line_total = $this->item_line_total( $item, $product, $quantity );
+			$item_discount_percent = $this->parse_request_percent( $item['item_discount_percent'] ?? $item['itemDiscountPercent'] ?? 0 );
 			if ( $item_discount_percent > 0 ) {
 				$line_total *= ( 100 - $item_discount_percent ) / 100;
 			}
@@ -232,24 +260,37 @@ class HP_CS_Frontend {
 		return [
 			'contents'    => $contents,
 			'destination' => [
-				'country'  => (string) ( $address['country'] ?? '' ),
-				'state'    => (string) ( $address['state'] ?? '' ),
-				'postcode' => (string) ( $address['postcode'] ?? $address['zip'] ?? '' ),
-				'city'     => (string) ( $address['city'] ?? '' ),
+				'country'  => $this->sanitize_request_text( $address['country'] ?? '' ),
+				'state'    => $this->sanitize_request_text( $address['state'] ?? '' ),
+				'postcode' => $this->sanitize_request_text( $address['postcode'] ?? $address['zip'] ?? '' ),
+				'city'     => $this->sanitize_request_text( $address['city'] ?? '' ),
 			],
 		];
 	}
 
 	private function resolve_funnel_product( array $item ) {
-		$product_id = absint( $item['variation_id'] ?? $item['variationId'] ?? $item['product_id'] ?? $item['productId'] ?? $item['id'] ?? 0 );
+		$product_id = $this->parse_positive_decimal_id( $item['variation_id'] ?? $item['variationId'] ?? $item['product_id'] ?? $item['productId'] ?? $item['id'] ?? 0 );
 		$product    = $product_id ? wc_get_product( $product_id ) : false;
 
-		if ( ! $product && ! empty( $item['sku'] ) ) {
-			$product_id = wc_get_product_id_by_sku( (string) $item['sku'] );
+		$sku = $this->sanitize_request_text( $item['sku'] ?? '' );
+		if ( ! $product && $sku !== '' ) {
+			$product_id = wc_get_product_id_by_sku( $sku );
 			$product    = $product_id ? wc_get_product( $product_id ) : false;
 		}
 
 		return $product instanceof WC_Product ? $product : false;
+	}
+
+	private function item_line_total( array $item, WC_Product $product, int $quantity ): float {
+		if ( isset( $item['line_total'] ) && is_numeric( $item['line_total'] ) ) {
+			return max( 0, (float) $item['line_total'] );
+		}
+
+		if ( isset( $item['unit_price'] ) && is_numeric( $item['unit_price'] ) ) {
+			return max( 0, (float) $item['unit_price'] ) * max( 1, $quantity );
+		}
+
+		return (float) wc_get_price_excluding_tax( $product, [ 'qty' => $quantity ] );
 	}
 
 	private function apply_discount_rules( array $rates, array $package, string $surface ) {
@@ -279,6 +320,9 @@ class HP_CS_Frontend {
 
 	private function discount_rule_matches_surface( array $rule, string $surface ) {
 		$rule_surface = (string) ( $rule['surface'] ?? 'classic' );
+		if ( $surface === 'hp_checkout' && in_array( $rule_surface, [ 'classic', 'funnel' ], true ) ) {
+			return true;
+		}
 		return $rule_surface === 'both' || $rule_surface === $surface;
 	}
 
@@ -314,7 +358,7 @@ class HP_CS_Frontend {
 			return $rate;
 		}
 
-		if ( $surface === 'funnel' && is_array( $rate ) ) {
+		if ( in_array( $surface, [ 'funnel', 'hp_checkout' ], true ) && is_array( $rate ) ) {
 			return $this->discount_funnel_rate( $rate, $discount );
 		}
 
@@ -339,15 +383,29 @@ class HP_CS_Frontend {
 	}
 
 	private function discount_funnel_rate( array $rate, float $discount ) {
-		foreach ( [ 'shipmentCost', 'shipping_amount_raw', 'base_amount_raw', 'shipment_cost' ] as $field ) {
+		foreach ( [ 'shipmentCost', 'shipping_amount_raw', 'base_amount_raw', 'shipment_cost', 'amount', 'cost', 'rate' ] as $field ) {
 			if ( isset( $rate[ $field ] ) && is_numeric( $rate[ $field ] ) ) {
-				$rate[ $field ] = max( 0, (float) $rate[ $field ] - $discount );
+				$cost           = (float) $rate[ $field ];
+				$rate[ $field ] = max( 0, $cost - $discount );
 				$rate['shipmentCost'] = $rate[ $field ];
 				return $rate;
 			}
 		}
 
 		return $rate;
+	}
+
+	public function show_zero_cost_rate_amount( $label, $method ) {
+		if ( ! is_object( $method ) || ! method_exists( $method, 'get_cost' ) ) {
+			return $label;
+		}
+
+		$method_id = method_exists( $method, 'get_method_id' ) ? (string) $method->get_method_id() : '';
+		if ( $method_id === 'free_shipping' || (float) $method->get_cost() > 0 || strpos( (string) $label, 'woocommerce-Price-amount' ) !== false ) {
+			return $label;
+		}
+
+		return $label . ': ' . wc_price( 0 );
 	}
 
 	private function log_evaluation( string $surface, string $mode, int $before_count, int $after_count, array $disabled_keys ) {
@@ -390,6 +448,10 @@ class HP_CS_Frontend {
 		}
 
 		$data = [];
+		if ( ! is_scalar( $post_data ) || strlen( (string) $post_data ) > HP_CS_CHECKOUT_POST_DATA_MAX_LENGTH ) {
+			return;
+		}
+
 		parse_str( (string) $post_data, $data );
 
 		$attrs = [
@@ -412,7 +474,7 @@ class HP_CS_Frontend {
 		foreach ( $attrs as $attr ) {
 			WC()->customer->set_props(
 				[
-					$attr => isset( $data[ $attr ] ) ? wp_unslash( $data[ $attr ] ) : null,
+					$attr => $this->get_checkout_field_value( $data, $attr ),
 				]
 			);
 
@@ -420,11 +482,63 @@ class HP_CS_Frontend {
 				$attr2 = str_replace( 'billing', 'shipping', $attr );
 				WC()->customer->set_props(
 					[
-						$attr2 => isset( $data[ $attr ] ) ? wp_unslash( $data[ $attr ] ) : null,
+						$attr2 => $this->get_checkout_field_value( $data, $attr ),
 					]
 				);
 			}
 		}
+	}
+
+	private function get_checkout_field_value( array $data, string $attr ) {
+		if ( ! array_key_exists( $attr, $data ) ) {
+			return null;
+		}
+
+		return $this->sanitize_request_text( $data[ $attr ] );
+	}
+
+	private function parse_positive_decimal_id( $value ): int {
+		if ( ! is_scalar( $value ) ) {
+			return 0;
+		}
+
+		$value = trim( (string) $value );
+		if ( ! preg_match( '/^[1-9][0-9]*$/', $value ) ) {
+			return 0;
+		}
+
+		$max_int = (string) PHP_INT_MAX;
+		if ( strlen( $value ) > strlen( $max_int ) || ( strlen( $value ) === strlen( $max_int ) && strcmp( $value, $max_int ) > 0 ) ) {
+			return 0;
+		}
+
+		return (int) $value;
+	}
+
+	private function parse_request_percent( $value ): float {
+		if ( ! is_scalar( $value ) ) {
+			return 0.0;
+		}
+
+		$value = trim( (string) wp_unslash( $value ) );
+		if ( $value === '' || strlen( $value ) > 32 || ! preg_match( '/^(?:0|[1-9][0-9]*)(?:\.[0-9]{1,4})?$/', $value ) ) {
+			return 0.0;
+		}
+
+		return min( 100, max( 0, (float) $value ) );
+	}
+
+	private function sanitize_request_text( $value, int $max_length = HP_CS_FRONTEND_TEXT_REQUEST_MAX_LENGTH ): string {
+		if ( ! is_scalar( $value ) ) {
+			return '';
+		}
+
+		$value = trim( (string) wp_unslash( $value ) );
+		if ( strlen( $value ) > $max_length ) {
+			return '';
+		}
+
+		return wc_clean( $value );
 	}
 
 	/**
@@ -506,4 +620,3 @@ class HP_CS_Frontend {
 		return $passed_rules;
 	}
 }
-

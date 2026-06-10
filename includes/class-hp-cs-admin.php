@@ -4,6 +4,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+if ( ! defined( 'HP_CS_RULESET_JSON_REQUEST_MAX_LENGTH' ) ) {
+	define( 'HP_CS_RULESET_JSON_REQUEST_MAX_LENGTH', 65536 );
+}
+
+if ( ! defined( 'HP_CS_ADMIN_TEXT_REQUEST_MAX_LENGTH' ) ) {
+	define( 'HP_CS_ADMIN_TEXT_REQUEST_MAX_LENGTH', 200 );
+}
+
+if ( ! defined( 'HP_CS_ADMIN_TEXTAREA_REQUEST_MAX_LENGTH' ) ) {
+	define( 'HP_CS_ADMIN_TEXTAREA_REQUEST_MAX_LENGTH', 2000 );
+}
+
 class HP_CS_Admin {
 	private static $instance = null;
 
@@ -43,6 +55,8 @@ class HP_CS_Admin {
 		if ( ! isset( $_GET['section'] ) || $_GET['section'] !== 'woo_conditional_shipping' ) {
 			return;
 		}
+
+		do_action( 'hp_zen_enqueue_admin_surface', 'hp-conditional-shipping' );
 
 		// jQuery UI dependencies for visual editor.
 		wp_enqueue_script( 'jquery-ui-sortable' );
@@ -92,15 +106,13 @@ class HP_CS_Admin {
 
 		$hide_save_button = true;
 
-		$action    = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : false;
-		$ruleset_id = isset( $_GET['ruleset_id'] ) ? wp_unslash( $_GET['ruleset_id'] ) : false;
+		$action         = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : false;
+		$ruleset_id_raw = isset( $_GET['ruleset_id'] ) ? wp_unslash( $_GET['ruleset_id'] ) : false;
+		$is_new_ruleset = $ruleset_id_raw === 'new';
+		$ruleset_id     = false;
 
-		if ( $ruleset_id ) {
-			if ( $ruleset_id === 'new' ) {
-				$ruleset_id = false;
-			} else {
-				$ruleset_id = absint( $ruleset_id );
-			}
+		if ( $ruleset_id_raw ) {
+			$ruleset_id = $is_new_ruleset ? false : $this->parse_positive_decimal_id( $ruleset_id_raw );
 
 			// Delete ruleset.
 			if ( $ruleset_id && $action === 'delete' && get_post_type( $ruleset_id ) === 'wcs_ruleset' ) {
@@ -119,9 +131,11 @@ class HP_CS_Admin {
 				exit;
 			}
 
-			$ruleset = new HP_CS_Ruleset( $ruleset_id );
-			include HP_CS_PATH . 'includes/admin/views/ruleset.php';
-			return;
+			if ( $is_new_ruleset || $ruleset_id ) {
+				$ruleset = new HP_CS_Ruleset( $ruleset_id );
+				include HP_CS_PATH . 'includes/admin/views/ruleset.php';
+				return;
+			}
 		}
 
 		$rulesets        = hp_cs_get_rulesets( false );
@@ -172,11 +186,18 @@ class HP_CS_Admin {
 
 		check_admin_referer( 'woocommerce-settings' );
 
-		$ruleset_id = sanitize_text_field( wp_unslash( $_POST['ruleset_id'] ) );
-		$post = null;
+		$ruleset_id_raw = sanitize_text_field( wp_unslash( $_POST['ruleset_id'] ) );
+		$ruleset_id     = 0;
+		$post           = null;
 
-		if ( $ruleset_id && $ruleset_id !== '0' ) {
-			$post = get_post( absint( $ruleset_id ) );
+		if ( $ruleset_id_raw && $ruleset_id_raw !== '0' ) {
+			$ruleset_id = $this->parse_positive_decimal_id( $ruleset_id_raw );
+			if ( ! $ruleset_id ) {
+				wp_safe_redirect( admin_url( 'admin.php?page=wc-settings&tab=shipping&section=woo_conditional_shipping' ) );
+				exit;
+			}
+
+			$post = get_post( $ruleset_id );
 			if ( ! $post || get_post_type( $post ) !== 'wcs_ruleset' ) {
 				$post = null;
 			}
@@ -203,8 +224,7 @@ class HP_CS_Admin {
 
 		// v0.1 parity editor: accept JSON blobs (preferred) OR legacy array post structure.
 		if ( isset( $_POST['wcs_conditions_json'] ) && is_string( $_POST['wcs_conditions_json'] ) ) {
-			$decoded = json_decode( wp_unslash( $_POST['wcs_conditions_json'] ), true );
-			$conditions = is_array( $decoded ) ? $decoded : [];
+			$conditions = $this->decode_ruleset_json_array( $_POST['wcs_conditions_json'] );
 		} else {
 			$conditions = isset( $_POST['wcs_conditions'] ) ? (array) $_POST['wcs_conditions'] : [];
 		}
@@ -212,8 +232,7 @@ class HP_CS_Admin {
 		update_post_meta( $post->ID, '_wcs_conditions', $conditions );
 
 		if ( isset( $_POST['wcs_actions_json'] ) && is_string( $_POST['wcs_actions_json'] ) ) {
-			$decoded = json_decode( wp_unslash( $_POST['wcs_actions_json'] ), true );
-			$actions = is_array( $decoded ) ? $decoded : [];
+			$actions = $this->decode_ruleset_json_array( $_POST['wcs_actions_json'] );
 		} else {
 			$actions = isset( $_POST['wcs_actions'] ) ? (array) $_POST['wcs_actions'] : [];
 		}
@@ -242,7 +261,7 @@ class HP_CS_Admin {
 			wp_send_json_error( [ 'message' => 'Permission denied' ], 403 );
 		}
 
-		$ruleset_id = isset( $_POST['id'] ) ? absint( $_POST['id'] ) : 0;
+		$ruleset_id = isset( $_POST['id'] ) ? $this->parse_positive_decimal_id( wp_unslash( $_POST['id'] ) ) : 0;
 		$post       = $ruleset_id ? get_post( $ruleset_id ) : null;
 
 		if ( ! $post || get_post_type( $post ) !== 'wcs_ruleset' ) {
@@ -286,6 +305,34 @@ class HP_CS_Admin {
 		return $post_id;
 	}
 
+	private function parse_positive_decimal_id( $value ): int {
+		if ( ! is_scalar( $value ) ) {
+			return 0;
+		}
+
+		$value = trim( (string) $value );
+		if ( ! preg_match( '/^[1-9][0-9]*$/', $value ) ) {
+			return 0;
+		}
+
+		$max_int = (string) PHP_INT_MAX;
+		if ( strlen( $value ) > strlen( $max_int ) || ( strlen( $value ) === strlen( $max_int ) && strcmp( $value, $max_int ) > 0 ) ) {
+			return 0;
+		}
+
+		return (int) $value;
+	}
+
+	private function decode_ruleset_json_array( $value ): array {
+		$value = wp_unslash( $value );
+		if ( ! is_string( $value ) || strlen( $value ) > HP_CS_RULESET_JSON_REQUEST_MAX_LENGTH ) {
+			return [];
+		}
+
+		$decoded = json_decode( $value, true );
+		return is_array( $decoded ) ? $decoded : [];
+	}
+
 	private function sanitize_deep( $value ) {
 		if ( is_array( $value ) ) {
 			$out = [];
@@ -323,23 +370,23 @@ class HP_CS_Admin {
 				continue;
 			}
 
-			$label          = sanitize_text_field( wp_unslash( (string) ( $rule['label'] ?? '' ) ) );
-			$shipping_class_raw = wp_unslash( (string) ( $rule['shipping_class'] ?? '' ) );
+			$label              = $this->sanitize_request_text( $rule['label'] ?? '' );
+			$shipping_class_raw = $this->sanitize_request_text( $rule['shipping_class'] ?? '' );
 			$shipping_class     = $shipping_class_raw === '_none' ? '_none' : sanitize_title( $shipping_class_raw );
-			$percent        = (float) wc_format_decimal( wp_unslash( (string) ( $rule['percentage_discount'] ?? 0 ) ) );
-			$min_amount     = (float) wc_format_decimal( wp_unslash( (string) ( $rule['min_amount'] ?? 0 ) ) );
+			$percent            = $this->parse_request_decimal( $rule['percentage_discount'] ?? 0, 100 );
+			$min_amount         = $this->parse_request_decimal( $rule['min_amount'] ?? 0, 999999 );
 
 			if ( $label === '' && $shipping_class === '' && $percent <= 0 && $min_amount <= 0 ) {
 				continue;
 			}
 
-			$surface = sanitize_key( wp_unslash( (string) ( $rule['surface'] ?? 'classic' ) ) );
-			if ( ! in_array( $surface, [ 'classic', 'funnel', 'both' ], true ) ) {
+			$surface_raw = $this->sanitize_request_text( $rule['surface'] ?? 'classic' );
+			$surface     = sanitize_key( $surface_raw );
+			if ( $surface !== $surface_raw || ! in_array( $surface, [ 'classic', 'funnel', 'hp_checkout', 'both' ], true ) ) {
 				$surface = 'classic';
 			}
 
-			$method_ids = isset( $rule['shipping_method_ids'] ) ? (array) wp_unslash( $rule['shipping_method_ids'] ) : [ '_all' ];
-			$method_ids = array_values( array_filter( array_map( 'sanitize_text_field', $method_ids ) ) );
+			$method_ids = $this->sanitize_shipping_method_ids( $rule['shipping_method_ids'] ?? [ '_all' ] );
 			if ( empty( $method_ids ) ) {
 				$method_ids = [ '_all' ];
 			}
@@ -349,19 +396,81 @@ class HP_CS_Admin {
 					'enabled'                    => ! empty( $rule['enabled'] ) ? 'yes' : 'no',
 					'label'                      => $label,
 					'shipping_class'             => $shipping_class,
-					'min_amount'                 => max( 0, $min_amount ),
-					'percentage_discount'        => max( 0, $percent ),
+					'min_amount'                 => max( 0.0, $min_amount ),
+					'percentage_discount'        => max( 0.0, $percent ),
 					'deduct_sale_discount'       => ! empty( $rule['deduct_sale_discount'] ) ? 'yes' : 'no',
 					'deduct_coupon_discount'     => ! empty( $rule['deduct_coupon_discount'] ) ? 'yes' : 'no',
 					'surface'                    => $surface,
 					'shipping_method_ids'        => $method_ids,
-					'shipping_method_name_match' => sanitize_textarea_field( wp_unslash( (string) ( $rule['shipping_method_name_match'] ?? '' ) ) ),
+					'shipping_method_name_match' => $this->sanitize_request_textarea( $rule['shipping_method_name_match'] ?? '' ),
 					'order'                      => $order++,
 				]
 			);
 		}
 
 		return $sanitized;
+	}
+
+	private function parse_request_decimal( $value, float $max ): float {
+		if ( ! is_scalar( $value ) ) {
+			return 0.0;
+		}
+
+		$value = trim( (string) wp_unslash( $value ) );
+		if ( $value === '' || strlen( $value ) > 32 || ! preg_match( '/^(?:0|[1-9][0-9]*)(?:\.[0-9]{1,4})?$/', $value ) ) {
+			return 0.0;
+		}
+
+		return min( $max, max( 0, (float) wc_format_decimal( $value ) ) );
+	}
+
+	private function sanitize_request_text( $value, int $max_length = HP_CS_ADMIN_TEXT_REQUEST_MAX_LENGTH ): string {
+		if ( ! is_scalar( $value ) ) {
+			return '';
+		}
+
+		$value = trim( (string) wp_unslash( $value ) );
+		if ( strlen( $value ) > $max_length ) {
+			$value = substr( $value, 0, $max_length );
+		}
+
+		return sanitize_text_field( $value );
+	}
+
+	private function sanitize_request_textarea( $value ): string {
+		if ( ! is_scalar( $value ) ) {
+			return '';
+		}
+
+		$value = trim( (string) wp_unslash( $value ) );
+		if ( strlen( $value ) > HP_CS_ADMIN_TEXTAREA_REQUEST_MAX_LENGTH ) {
+			$value = substr( $value, 0, HP_CS_ADMIN_TEXTAREA_REQUEST_MAX_LENGTH );
+		}
+
+		return sanitize_textarea_field( $value );
+	}
+
+	private function sanitize_shipping_method_ids( $value ): array {
+		$values = is_array( $value ) ? wp_unslash( $value ) : [ $value ];
+		$out    = [];
+
+		foreach ( $values as $method_id ) {
+			if ( ! is_scalar( $method_id ) ) {
+				continue;
+			}
+
+			$method_id = trim( (string) $method_id );
+			if ( strlen( $method_id ) > HP_CS_ADMIN_TEXT_REQUEST_MAX_LENGTH ) {
+				continue;
+			}
+
+			$method_id = sanitize_text_field( $method_id );
+			if ( $method_id === '_all' || $method_id === '_name_match' || preg_match( '/^[A-Za-z0-9:_-]+$/', $method_id ) ) {
+				$out[] = $method_id;
+			}
+		}
+
+		return array_values( array_unique( array_filter( $out ) ) );
 	}
 
 	public function hide_default_settings( $settings, $section ) {
