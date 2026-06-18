@@ -319,11 +319,9 @@ class HP_CS_Frontend {
 	}
 
 	private function discount_rule_matches_surface( array $rule, string $surface ) {
-		$rule_surface = (string) ( $rule['surface'] ?? 'classic' );
-		if ( $surface === 'hp_checkout' && in_array( $rule_surface, [ 'classic', 'funnel' ], true ) ) {
-			return true;
-		}
-		return $rule_surface === 'both' || $rule_surface === $surface;
+		// Delegate to the public helper so storefront and admin estimators share
+		// one surface-matching implementation.
+		return hp_cs_discount_rule_matches_surface( $rule, $surface );
 	}
 
 	private function get_discount_rule_eligible_amount( array $package, array $rule ) {

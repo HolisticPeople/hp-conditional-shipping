@@ -2,6 +2,10 @@
 
 HolisticPeople WordPress plugin: drop-in replacement for Woo Conditional Shipping Pro (ruleset parity + performance).
 
+## 2.0.10
+
+- Expose a public, fail-soft `hp_cs_calculate_order_shipping_discount( WC_Order $order, string $method_title = '', string $surface = 'hp_checkout' )` so consumer plugins (EAO ShipStation metabox) can estimate the standard front-end shipping subsidy for an existing order without reaching into the front-end class. Backed by new public helpers `hp_cs_discount_rule_matches_surface()` and `hp_cs_order_discount_eligible_amount()`; the storefront surface matcher now delegates to the shared helper so admin and checkout stay in lockstep.
+
 ## 2.0.9
 
 - Resync imported wc-shipping-discount rules so enabled, minimum amount, and percentage settings stay aligned with the legacy source during checkout migration.
