@@ -61,6 +61,118 @@ function hp_cs_get_shipping_discount_rules() {
 	return $rules;
 }
 
+/**
+ * Whether a discount rule applies to the given checkout surface.
+ *
+ * Public, stable mirror of HP_CS_Frontend's private surface matcher so consumer
+ * plugins (e.g. EAO) can reuse the exact same surface semantics without reaching
+ * into the front-end class internals.
+ *
+ * @param array  $rule    A normalized discount rule.
+ * @param string $surface One of 'classic', 'funnel', 'hp_checkout', 'both'.
+ * @return bool
+ */
+function hp_cs_discount_rule_matches_surface( array $rule, string $surface ): bool {
+	$rule_surface = (string) ( $rule['surface'] ?? 'classic' );
+	if ( $surface === 'hp_checkout' && in_array( $rule_surface, [ 'classic', 'funnel' ], true ) ) {
+		return true;
+	}
+	return $rule_surface === 'both' || $rule_surface === $surface;
+}
+
+/**
+ * Sum the discount-eligible product amount on a WC_Order for a given rule.
+ *
+ * Mirrors HP_CS_Frontend::get_discount_rule_eligible_amount() but reads from a
+ * persisted order's line items instead of a live cart package, so admin tools
+ * can estimate the front-end shipping subsidy for an existing order.
+ *
+ * @param WC_Order $order The order to inspect.
+ * @param array    $rule  A normalized discount rule.
+ * @return float Eligible product amount (line totals, excluding tax).
+ */
+function hp_cs_order_discount_eligible_amount( WC_Order $order, array $rule ): float {
+	$shipping_class_raw = (string) ( $rule['shipping_class'] ?? '' );
+	$shipping_class     = $shipping_class_raw === '_none' ? '_none' : sanitize_title( $shipping_class_raw );
+	$total              = 0.0;
+
+	foreach ( $order->get_items() as $item ) {
+		if ( ! $item instanceof WC_Order_Item_Product ) {
+			continue;
+		}
+
+		$product = $item->get_product();
+		if ( ! $product instanceof WC_Product ) {
+			continue;
+		}
+
+		$product_shipping_class = $product->get_shipping_class();
+		if ( $shipping_class === '_none' && $product_shipping_class !== '' ) {
+			continue;
+		}
+		if ( $shipping_class !== '' && $shipping_class !== '_none' && $product_shipping_class !== $shipping_class ) {
+			continue;
+		}
+
+		$total += max( 0, (float) $item->get_total() );
+	}
+
+	return $total;
+}
+
+/**
+ * Calculate the standard front-end shipping discount that would apply to an order.
+ *
+ * Public, fail-soft entry point for consumer plugins. Replays the same rule
+ * evaluation the storefront uses (eligible amount >= min, percentage discount,
+ * shipping-method match, surface match) against a persisted order's line items
+ * and returns the total discount amount that would be subtracted from a matching
+ * shipping rate. The caller is responsible for clamping the final rate at >= 0.
+ *
+ * @param WC_Order $order        The order to estimate the subsidy for.
+ * @param string   $method_title The shipping method/service label the discount
+ *                               would apply to (used for name-match rules).
+ * @param string   $surface      Checkout surface to emulate. Defaults to
+ *                               'hp_checkout', which also folds in classic/funnel
+ *                               rules (matching storefront behavior).
+ * @return float Total discount amount (>= 0), rounded to 2 decimals.
+ */
+function hp_cs_calculate_order_shipping_discount( WC_Order $order, string $method_title = '', string $surface = 'hp_checkout' ): float {
+	$rules = hp_cs_get_shipping_discount_rules();
+	if ( empty( $rules ) ) {
+		return 0.0;
+	}
+
+	$total_discount = 0.0;
+
+	foreach ( $rules as $rule ) {
+		if ( ( $rule['enabled'] ?? 'no' ) !== 'yes' ) {
+			continue;
+		}
+		if ( ! hp_cs_discount_rule_matches_surface( $rule, $surface ) ) {
+			continue;
+		}
+
+		$eligible_amount = hp_cs_order_discount_eligible_amount( $order, $rule );
+		$min_amount      = max( 0, (float) ( $rule['min_amount'] ?? 0 ) );
+		$percent         = max( 0, (float) ( $rule['percentage_discount'] ?? 0 ) );
+
+		if ( $percent <= 0 || $eligible_amount < $min_amount ) {
+			continue;
+		}
+
+		// Honour shipping-method targeting. ShipStation rates have no WC instance
+		// id, so only "_all" / "_name_match" rules can match (false instance).
+		if ( ! hp_cs_method_selected( $method_title, false, $rule ) ) {
+			continue;
+		}
+
+		$total_discount += $eligible_amount * ( $percent / 100 );
+	}
+
+	return round( max( 0.0, $total_discount ), 2 );
+}
+
 function hp_cs_maybe_import_wc_shipping_discount_rules() {
 	if ( get_option( 'hp_cs_wc_shipping_discount_imported', '' ) === 'yes' ) {
 		hp_cs_sync_imported_wc_shipping_discount_rules();
