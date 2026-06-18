@@ -4,6 +4,7 @@ declare(strict_types=1);
 $tests = [
     __DIR__ . '/hp-checkout-shipping-filter-contract-test.php',
     __DIR__ . '/shipping-discount-import-sync-contract-test.php',
+    __DIR__ . '/order-shipping-discount-contract-test.php',
 ];
 
 foreach ($tests as $test) {
