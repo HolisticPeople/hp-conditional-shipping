@@ -259,6 +259,9 @@ class HP_CS_Frontend {
 
 		return [
 			'contents'    => $contents,
+			// Subtotal conditions must read these line totals, not the (empty)
+			// Woo session cart behind funnel / HP Checkout requests.
+			'hp_cs_contents_subtotal' => true,
 			'destination' => [
 				'country'  => $this->sanitize_request_text( $address['country'] ?? '' ),
 				'state'    => $this->sanitize_request_text( $address['state'] ?? '' ),
