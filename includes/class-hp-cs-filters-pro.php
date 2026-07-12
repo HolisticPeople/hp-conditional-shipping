@@ -75,9 +75,13 @@ class HP_CS_Filters_Pro {
 		$value   = self::get_shipping_destination_value( $package, 'postcode' );
 		$country = self::get_shipping_destination_value( $package, 'country' );
 
-		if ( $value === null ) {
-			return false;
-		}
+		// An unknown/empty postcode matches NOTHING. Returning false here made
+		// the condition PASS whenever the value was unresolvable, so a postcode
+		// blocklist rule silently disabled ALL rates for every postcode-less
+		// destination (AE/HK/QA guest checkouts, where WC()->customer is absent
+		// in REST context). Fall through with '' instead: the matcher finds no
+		// match, so `is` fails and `isnot` passes — both correct for no postcode.
+		$value = (string) ( $value ?? '' );
 
 		$postcodes_raw = isset( $condition['postcodes'] ) ? trim( (string) $condition['postcodes'] ) : '';
 		if ( $postcodes_raw === '' ) {
@@ -112,11 +116,12 @@ class HP_CS_Filters_Pro {
 	 * Shipping city (supports wildcard).
 	 */
 	public static function filter_shipping_city( $condition, $package = [] ) {
-		$value = self::get_shipping_destination_value( $package, 'city' );
-		$value = $value !== null ? trim( strtolower( (string) $value ) ) : null;
+		// Same fail-open trap as filter_shipping_postcode: an unknown city must
+		// match nothing, not auto-pass the condition.
+		$value = trim( strtolower( (string) ( self::get_shipping_destination_value( $package, 'city' ) ?? '' ) ) );
 
 		$cities_raw = isset( $condition['cities'] ) ? trim( (string) $condition['cities'] ) : '';
-		if ( $value === null || $cities_raw === '' ) {
+		if ( $cities_raw === '' ) {
 			return false;
 		}
 
