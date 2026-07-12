@@ -34,7 +34,7 @@ class HP_CS_Filters {
 	}
 
 	public static function filter_subtotal( $condition, $package ) {
-		$cart_subtotal = self::get_cart_subtotal( $condition );
+		$cart_subtotal = self::get_package_subtotal( $package, $condition );
 
 		if ( isset( $condition['value'] ) && $condition['value'] !== '' ) {
 			$subtotal = self::parse_number( $condition['value'] );
@@ -90,6 +90,29 @@ class HP_CS_Filters {
 		];
 		$children_ids = get_posts( $args );
 		return array_values( array_unique( array_merge( $children_ids, $product_ids ) ) );
+	}
+
+	/**
+	 * Subtotal for condition checks. HP-built packages (funnel / HP Checkout)
+	 * carry their own line totals and have no Woo session cart behind them, so
+	 * their subtotal must come from the package contents; classic surfaces keep
+	 * reading the Woo cart.
+	 */
+	public static function get_package_subtotal( $package, $condition = false ) {
+		if ( is_array( $package ) && ! empty( $package['hp_cs_contents_subtotal'] ) && isset( $package['contents'] ) && is_array( $package['contents'] ) ) {
+			$total = 0.0;
+
+			foreach ( $package['contents'] as $item ) {
+				if ( ! is_array( $item ) || ! isset( $item['line_total'] ) || ! is_numeric( $item['line_total'] ) ) {
+					continue;
+				}
+				$total += max( 0, (float) $item['line_total'] );
+			}
+
+			return round( $total, wc_get_price_decimals() );
+		}
+
+		return self::get_cart_subtotal( $condition );
 	}
 
 	public static function get_cart_subtotal( $condition = false ) {
