@@ -6,6 +6,7 @@ $tests = [
     __DIR__ . '/subtotal-package-contents-contract-test.php',
     __DIR__ . '/shipping-discount-import-sync-contract-test.php',
     __DIR__ . '/order-shipping-discount-contract-test.php',
+    __DIR__ . '/postcodeless-destination-blocklist-contract-test.php',
 ];
 
 foreach ($tests as $test) {
