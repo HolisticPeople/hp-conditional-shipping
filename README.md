@@ -2,6 +2,10 @@
 
 HolisticPeople WordPress plugin: drop-in replacement for Woo Conditional Shipping Pro (ruleset parity + performance).
 
+## 2.0.12
+
+- Fix postcode/city conditions failing OPEN on unresolvable destination values: `filter_shipping_postcode` treated an unknown postcode as a condition match, so a postcode blocklist rule (`is 07512`, live rule 23438 "Customers blocked") silently disabled ALL shipping methods for every postcode-less destination (AE/HK/QA) on guest REST checkouts — where `WC()->customer` is absent and the package postcode is legitimately empty. An empty/unknown postcode now matches nothing: `is <list>` fails, `isnot <list>` passes. Same fix for `filter_shipping_city`. Root cause of the QA `shipping.ae-postcodeless.rates` permanent false-red (rates were quoted by ShipStation, then wiped by the blocklist rule with no message).
+
 ## 2.0.11
 
 - Fix subtotal conditions being silently inert on HP Checkout (and funnel) surfaces: `filter_subtotal` now sums `line_total` values from HP-built package contents instead of reading the empty Woo session cart, so subtotal-cap rules (e.g. AU $700 max) apply to real HP Checkout customers again. Classic cart/checkout surfaces keep the existing Woo cart subtotal path.

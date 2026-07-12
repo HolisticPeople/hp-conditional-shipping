@@ -3,7 +3,7 @@
 Plugin Name: HP Conditional Shipping
 Plugin URI:  https://holisticpeople.com
 Description: Drop-in replacement for Woo Conditional Shipping Pro. Filters shipping methods based on rulesets stored in the wcs_ruleset CPT.
-Version:     2.0.11
+Version:     2.0.12
 Author:      HolisticPeople
 Text Domain: hp-conditional-shipping
 Requires PHP: 8.5
@@ -23,7 +23,7 @@ if (PHP_VERSION_ID < 80500) {
 }
 
 if ( ! defined( 'HP_CS_VERSION' ) ) {
-	define( 'HP_CS_VERSION', '2.0.11' );
+	define( 'HP_CS_VERSION', '2.0.12' );
 }
 
 if ( ! defined( 'HP_CS_FILE' ) ) {
