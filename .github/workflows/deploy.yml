@@ -67,6 +67,7 @@ jobs:
           rsync -az --delete \
             -e "ssh -p ${{ secrets.KINSTA_PORT }}" \
             --exclude ".git/" --exclude ".github/" --exclude ".gitignore" \
+            --exclude "tests/" --exclude "tools/" \
             ./ "${{ secrets.KINSTA_USER }}@${{ secrets.KINSTA_HOST }}:${PLUGIN_PATH}"
 
       - name: Purge Kinsta page cache
@@ -134,6 +135,7 @@ jobs:
           rsync -az --delete \
             -e "ssh -p ${{ secrets.KINSTAPROD_PORT }}" \
             --exclude ".git/" --exclude ".github/" --exclude ".gitignore" \
+            --exclude "tests/" --exclude "tools/" \
             ./ "${{ secrets.KINSTAPROD_USER }}@${{ secrets.KINSTAPROD_HOST }}:${PLUGIN_PATH}"
 
       - name: Post-deploy (wp-cli)
