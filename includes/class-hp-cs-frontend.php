@@ -215,9 +215,16 @@ class HP_CS_Frontend {
 
 	private function rate_matches_action( $rate, array $action, string $surface ) {
 		if ( in_array( $surface, [ 'funnel', 'hp_checkout' ], true ) ) {
-			$title       = is_array( $rate ) ? (string) ( $rate['serviceName'] ?? $rate['service_name'] ?? $rate['name'] ?? '' ) : '';
-			$instance_id = is_array( $rate ) ? (string) ( $rate['serviceCode'] ?? $rate['service_code'] ?? $rate['code'] ?? '' ) : false;
-			return hp_cs_method_selected( $title, $instance_id, $action );
+			$title        = is_array( $rate ) ? (string) ( $rate['serviceName'] ?? $rate['service_name'] ?? $rate['name'] ?? '' ) : '';
+			$service_code = is_array( $rate ) ? (string) ( $rate['serviceCode'] ?? $rate['service_code'] ?? $rate['code'] ?? '' ) : '';
+			$service_key  = is_array( $rate ) ? (string) ( $rate['service_key'] ?? '' ) : '';
+			if ( $service_key === '' && is_array( $rate ) ) {
+				$carrier = strtolower( (string) ( $rate['carrierCode'] ?? $rate['carrier_code'] ?? $rate['carrier'] ?? '' ) );
+				$carrier = strpos( $carrier, 'fedex' ) !== false ? 'fedex' : ( strpos( $carrier, 'ups' ) !== false ? 'ups' : ( strpos( $carrier, 'stamps' ) !== false ? 'usps' : sanitize_key( $carrier ) ) );
+				$service_key = $carrier !== '' && $service_code !== '' ? $carrier . ':' . sanitize_key( $service_code ) : '';
+			}
+			return ( $service_key !== '' && hp_cs_method_selected( $title, $service_key, $action ) )
+				|| hp_cs_method_selected( $title, $service_code !== '' ? $service_code : false, $action );
 		}
 
 		$title = method_exists( $rate, 'get_label' ) ? (string) $rate->get_label() : '';

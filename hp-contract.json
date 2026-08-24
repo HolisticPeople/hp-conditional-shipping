@@ -8,7 +8,9 @@
   "must_not_own": [
     "cross-plugin source mutation without registered contract"
   ],
-  "consumes": [],
+  "consumes": [
+    "HP Core/HP Checkout carrier-qualified shipping rate identity (service_key) with legacy unqualified service-code fallback"
+  ],
   "exposes": {
     "cpts": [
       "wcs_ruleset"
