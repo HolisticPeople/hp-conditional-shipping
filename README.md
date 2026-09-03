@@ -2,6 +2,11 @@
 
 HolisticPeople WordPress plugin: drop-in replacement for Woo Conditional Shipping Pro (ruleset parity + performance).
 
+## 2.0.14
+
+- The WooCommerce product condition selector now uses HP Core's shared Hebrew
+  keyboard recovery before its catalog request is sent.
+
 ## 2.0.13
 
 - Matches carrier-qualified ShipStation services such as `fedex:fedex_international_priority` while retaining legacy unqualified rule compatibility.
