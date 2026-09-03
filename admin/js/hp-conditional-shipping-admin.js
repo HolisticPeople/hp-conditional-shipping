@@ -20,6 +20,7 @@ jQuery(document).ready(function($) {
 			this.initTagSearch();
 			this.initMetaSearch();
 			this.initCouponSearch();
+			this.initProductSearchKeyboardLayout();
 			this.initDatepicker();
 			this.insertExisting();
 			this.insertEmpty();
@@ -32,6 +33,30 @@ jQuery(document).ready(function($) {
 
 				this.triggersInit = true;
 			}
+		},
+
+		/**
+		 * WooCommerce owns the product selector's AJAX transport. Scope keyboard
+		 * recovery to this rule builder's product picker before Woo sends the term.
+		 */
+		initProductSearchKeyboardLayout: function() {
+			$( document.body ).off( 'select2:open.hpCsKeyboardLayout' ).on( 'select2:open.hpCsKeyboardLayout', function( event ) {
+				var $select = $( event.target );
+				if ( ! $select.hasClass( 'wc-product-search' ) ) {
+					return;
+				}
+				var $field = $( '.select2-container--open .select2-search__field' );
+				$field.off( 'input.hpCsKeyboardLayout' ).on( 'input.hpCsKeyboardLayout', function() {
+					if ( ! window.HPAdminSearchKeyboard ) {
+						return;
+					}
+					var converted = window.HPAdminSearchKeyboard.hebrewToQwerty( this.value );
+					if ( converted !== this.value ) {
+						this.value = converted;
+						$( this ).trigger( 'input' );
+					}
+				} );
+			} );
 		},
 
 		/**
