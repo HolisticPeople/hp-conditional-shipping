@@ -2,6 +2,12 @@
 
 HolisticPeople WordPress plugin: drop-in replacement for Woo Conditional Shipping Pro (ruleset parity + performance).
 
+## 2.0.15
+
+- Contain the shipping-discounts editor in a labelled, keyboard-accessible
+  horizontal scroll region without expanding the Conditions page.
+- Stack section labels and controls on phone and tablet layouts.
+
 ## 2.0.14
 
 - The WooCommerce product condition selector now uses HP Core's shared Hebrew

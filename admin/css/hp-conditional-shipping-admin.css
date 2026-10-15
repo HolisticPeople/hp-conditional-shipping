@@ -1,3 +1,67 @@
+/* Constrain the parent table before its nested editor can contribute an
+ * intrinsic width. Keep all discount fields available in a local scroller. */
+.woocommerce table.hp-cs-settings-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.hp-cs-settings-table > tbody > tr > td {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.hp-cs-settings-table #hp_cs_mode {
+  max-width: 100%;
+}
+
+.hp-cs-discounts-scroll {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin-top: 8px;
+  overflow-x: auto;
+}
+
+.hp-cs-discounts-scroll:focus-visible {
+  outline: 2px solid var(--hp-admin-accent, #2271b1);
+  outline-offset: 2px;
+}
+
+.hp-cs-discounts-scroll .hp-cs-discounts-table {
+  min-width: 1280px;
+  margin: 0;
+}
+
+/* WordPress stacks every descendant of form-table on small screens, including
+ * this nested table. Preserve the editor's column relationships while scrolling. */
+.hp-cs-discounts-table > thead {
+  display: table-header-group;
+}
+
+.hp-cs-discounts-table > tbody {
+  display: table-row-group;
+}
+
+.hp-cs-discounts-table > thead > tr,
+.hp-cs-discounts-table > tbody > tr {
+  display: table-row;
+}
+
+.hp-cs-discounts-table > thead > tr > th,
+.hp-cs-discounts-table > tbody > tr > td {
+  display: table-cell;
+  width: auto;
+}
+
+@media (max-width: 1023px) {
+  .hp-cs-settings-table > tbody > tr > th,
+  .hp-cs-settings-table > tbody > tr > td {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
 .woocommerce table.form-table table.wcs-table {
   width: 100%;
   background: #fff;

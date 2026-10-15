@@ -28,7 +28,7 @@ $discount_rows = $discount_rules;
 $discount_rows[] = hp_cs_normalize_discount_rule( [ 'label' => '', 'order' => count( $discount_rows ) ] );
 ?>
 
-<table class="form-table">
+<table class="form-table hp-cs-settings-table">
 	<tbody>
 		<tr valign="top">
 			<th scope="row" class="titledesc">
@@ -45,13 +45,14 @@ $discount_rows[] = hp_cs_normalize_discount_rule( [ 'label' => '', 'order' => co
 		</tr>
 		<tr valign="top">
 			<th scope="row" class="titledesc">
-				<label><?php esc_html_e( 'Shipping discounts', 'hp-conditional-shipping' ); ?></label>
+				<label id="hp-cs-shipping-discounts-label"><?php esc_html_e( 'Shipping discounts', 'hp-conditional-shipping' ); ?></label>
 			</th>
 			<td class="forminp">
 				<p class="description">
 					<?php esc_html_e( 'Discounts are calculated from the current eligible product line amount, so sale prices are already reflected. Imported legacy flags are retained for compatibility.', 'hp-conditional-shipping' ); ?>
 				</p>
-				<table class="widefat striped" style="margin-top:8px;">
+				<div class="hp-cs-discounts-scroll" role="region" aria-labelledby="hp-cs-shipping-discounts-label" aria-describedby="hp-cs-discounts-scroll-help" tabindex="0">
+				<table class="widefat striped hp-cs-discounts-table">
 					<thead>
 						<tr>
 							<th><?php esc_html_e( 'Enabled', 'hp-conditional-shipping' ); ?></th>
@@ -127,6 +128,8 @@ $discount_rows[] = hp_cs_normalize_discount_rule( [ 'label' => '', 'order' => co
 						<?php endforeach; ?>
 					</tbody>
 				</table>
+				</div>
+				<p class="description" id="hp-cs-discounts-scroll-help"><?php esc_html_e( 'Scroll sideways to view all discount fields.', 'hp-conditional-shipping' ); ?></p>
 			</td>
 		</tr>
 		<tr valign="top">
